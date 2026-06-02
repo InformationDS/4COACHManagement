@@ -1,0 +1,27 @@
+<!-- pages/index/index.wxml - 入口页：角色判断与分发 -->
+<view class="splash-container">
+  <view class="splash-content">
+    <!-- Logo / 品牌区 -->
+    <view class="splash-logo">
+      <text class="splash-icon">💪</text>
+      <text class="splash-title">私教助手</text>
+      <text class="splash-subtitle">自由私人教练的得力工具</text>
+    </view>
+
+    <!-- 加载状态 -->
+    <view class="splash-status" wx:if="{{loading}}">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">正在加载...</text>
+    </view>
+
+    <!-- 加载完成后根据角色分发 -->
+    <view class="splash-actions" wx:if="{{!loading}}">
+      <text class="splash-welcome" wx:if="{{role !== 'unknown'}}">
+        欢迎回来，{{roleText}}
+      </text>
+      <text class="splash-tip" wx:if="{{role === 'unknown'}}">
+        您还未注册，请联系教练获取邀请
+      </text>
+    </view>
+  </view>
+</view>

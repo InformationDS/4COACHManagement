@@ -1,0 +1,63 @@
+<!-- pages/coach/students/students.wxml - 学员列表 -->
+<view class="container">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrapper">
+      <text class="search-icon">🔍</text>
+      <input
+        class="search-input"
+        placeholder="搜索学员姓名..."
+        value="{{keyword}}"
+        bindinput="onSearchInput"
+        confirm-type="search"
+      />
+      <text class="search-clear" wx:if="{{keyword}}" bindtap="onClearSearch">✕</text>
+    </view>
+  </view>
+
+  <!-- 学员列表 -->
+  <view wx:if="{{students.length > 0}}" class="student-list">
+    <view
+      class="student-card"
+      wx:for="{{students}}"
+      wx:key="_id"
+      bindtap="onTapStudent"
+      data-id="{{item._id}}"
+    >
+      <view class="student-avatar">
+        <image wx:if="{{item.avatar_url}}" src="{{item.avatar_url}}" mode="aspectFill" />
+        <text wx:else class="avatar-placeholder">{{item.name[0]}}</text>
+      </view>
+      <view class="student-info">
+        <text class="student-name">{{item.name}}</text>
+        <text class="student-meta">
+          <text wx:if="{{item.last_lesson_date}}">最近上课：{{item.last_lesson_date}}</text>
+          <text wx:else class="text-muted">暂无上课记录</text>
+        </text>
+      </view>
+      <view class="student-lessons">
+        <text class="lessons-count">{{item.remaining_lessons || 0}}</text>
+        <text class="lessons-label">剩余课时</text>
+      </view>
+      <text class="arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{!loading && students.length === 0}}" class="empty-state">
+    <text class="empty-state-icon">👥</text>
+    <text class="empty-state-text">{{keyword ? '没有搜索到匹配的学员' : '还没有添加学员\n点击下方按钮添加第一位学员'}}</text>
+  </view>
+
+  <!-- 加载状态 -->
+  <view wx:if="{{loading}}" class="empty-state">
+    <text class="empty-state-text">加载中...</text>
+  </view>
+
+  <!-- 添加按钮 -->
+  <view class="fab-wrapper safe-bottom">
+    <button class="fab" bindtap="onAddStudent">
+      <text class="fab-icon">+</text>
+    </button>
+  </view>
+</view>

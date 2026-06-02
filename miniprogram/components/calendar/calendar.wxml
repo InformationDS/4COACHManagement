@@ -1,0 +1,64 @@
+<!-- components/calendar/calendar.wxml - 日历组件 -->
+<view class="calendar">
+  <!-- 头部：年月 + 切换按钮 -->
+  <view class="cal-header">
+    <view class="cal-nav" bindtap="onPrevMonth">
+      <text class="cal-arrow">‹</text>
+    </view>
+    <text class="cal-title" bindtap="onToggleView">{{year}}年 {{month}}月 {{viewMode === 'week' ? '第' + weekIndexStr + '周' : ''}}</text>
+    <view class="cal-nav" bindtap="onNextMonth">
+      <text class="cal-arrow">›</text>
+    </view>
+  </view>
+
+  <!-- 月视图 -->
+  <block wx:if="{{viewMode === 'month'}}">
+    <view class="cal-weekdays">
+      <text class="cal-weekday" wx:for="{{['日','一','二','三','四','五','六']}}" wx:key="*this">{{item}}</text>
+    </view>
+    <view class="cal-grid">
+      <view
+        class="cal-day {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? '' : 'other-month'}} {{item.date === selectedDate ? 'selected' : ''}} {{item.hasPending ? 'dot-pending' : ''}} {{item.hasConfirmed ? 'dot-confirmed' : ''}} {{item.hasCancelled ? 'dot-cancelled' : ''}}"
+        wx:for="{{monthDays}}"
+        wx:key="date"
+        data-date="{{item.date}}"
+        bindtap="onSelectDate"
+      >
+        <text class="cal-day-num">{{item.day}}</text>
+        <view class="cal-dots" wx:if="{{item.hasLessons}}">
+          <view class="cal-dot dp" wx:if="{{item.hasPending}}"></view>
+          <view class="cal-dot dc" wx:if="{{item.hasConfirmed}}"></view>
+          <view class="cal-dot dx" wx:if="{{item.hasCancelled}}"></view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 周视图 -->
+  <block wx:if="{{viewMode === 'week'}}">
+    <view class="cal-weekdays">
+      <text class="cal-weekday" wx:for="{{weekDays}}" wx:key="date">
+        {{item.label}} {{item.day}}
+      </text>
+    </view>
+    <view class="cal-week-grid">
+      <view
+        class="cal-day week-mode {{item.isToday ? 'today' : ''}} {{item.date === selectedDate ? 'selected' : ''}} {{item.hasPending ? 'dot-pending' : ''}} {{item.hasConfirmed ? 'dot-confirmed' : ''}}"
+        wx:for="{{weekDays}}"
+        wx:key="date"
+        data-date="{{item.date}}"
+        bindtap="onSelectDate"
+      >
+        <view class="cal-dots" wx:if="{{item.hasLessons}}">
+          <view class="cal-dot dp" wx:if="{{item.hasPending}}"></view>
+          <view class="cal-dot dc" wx:if="{{item.hasConfirmed}}"></view>
+        </view>
+      </view>
+    </view>
+  </block>
+
+  <!-- 视图切换按钮 -->
+  <view class="cal-view-toggle" bindtap="onToggleView">
+    <text>{{viewMode === 'month' ? '切换周视图' : '切换月视图'}}</text>
+  </view>
+</view>

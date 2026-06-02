@@ -1,0 +1,212 @@
+/* pages/coach/student-detail/student-detail.wxss */
+
+/* 头像区域 */
+.avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40rpx 0 24rpx;
+}
+
+.avatar-box {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  background: var(--color-bg);
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-box image {
+  width: 100%;
+  height: 100%;
+}
+
+.avatar-box-placeholder {
+  font-size: 56rpx;
+}
+
+.avatar-camera {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 44rpx;
+  background: rgba(0,0,0,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+}
+
+.avatar-hint {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  margin-top: 16rpx;
+}
+
+/* 性别选择 */
+.radio-group {
+  display: flex;
+  gap: 16rpx;
+}
+
+.radio-item {
+  flex: 1;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  border: 2rpx solid transparent;
+  transition: all 0.2s;
+}
+
+.radio-item.active {
+  background: var(--color-primary-light);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  font-weight: 500;
+}
+
+/* 表单行 */
+.form-row {
+  display: flex;
+  gap: 16rpx;
+}
+
+/* 课时概览 */
+.lessons-overview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32rpx 0;
+  background: var(--color-primary-light);
+  border-radius: var(--radius-md);
+  margin-bottom: 24rpx;
+}
+
+.lessons-big {
+  font-size: 72rpx;
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.lessons-unit {
+  font-size: var(--font-sm);
+  color: var(--color-primary);
+  margin-top: 8rpx;
+}
+
+.lessons-actions {
+  display: flex;
+}
+
+/* 课时变动记录 */
+.section-title {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 12rpx;
+}
+
+.log-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid var(--color-divider);
+}
+
+.log-item:last-child {
+  border-bottom: none;
+}
+
+.log-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.log-reason {
+  font-size: var(--font-sm);
+  color: var(--color-text);
+}
+
+.log-time {
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  margin-top: 4rpx;
+}
+
+.log-amount {
+  font-size: var(--font-lg);
+  font-weight: 600;
+}
+
+/* 弹窗 */
+.modal-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+}
+
+.modal-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+}
+
+.modal-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600rpx;
+  z-index: 1;
+}
+
+.modal-content {
+  background: #fff;
+  border-radius: var(--radius-lg);
+  padding: 40rpx 32rpx;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8rpx;
+}
+
+.modal-title {
+  font-size: var(--font-lg);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.modal-close {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: var(--color-text-light);
+}
+
+.modal-actions {
+  display: flex;
+}

@@ -1,0 +1,100 @@
+<!-- pages/coach/settings/settings.wxml -->
+<view class="container">
+  <!-- 课程时长 -->
+  <view class="card">
+    <view class="card-header">课程时长</view>
+    <view class="duration-row">
+      <input class="duration-input" type="number" value="{{settings.lesson_duration}}" bindinput="onDurationInput" />
+      <text class="duration-unit">分钟 / 节</text>
+    </view>
+  </view>
+
+  <!-- 可约时段模板 -->
+  <view class="card">
+    <view class="card-header">可约时段模板</view>
+    <view wx:if="{{templates.length > 0}}">
+      <view class="template-item" wx:for="{{templates}}" wx:key="index">
+        <view class="template-info">
+          <text class="template-days">{{item.daysText}}</text>
+          <text class="template-time" wx:for="{{item.timeRanges}}" wx:key="*this" wx:for-item="range">
+            {{range.start}} - {{range.end}}
+          </text>
+        </view>
+        <view class="template-delete" data-index="{{index}}" bindtap="onDeleteTemplate">删除</view>
+      </view>
+    </view>
+    <view wx:else class="text-muted text-sm text-center py-24">暂无时段模板，点击下方添加</view>
+    <button class="btn btn-outline btn-sm btn-block mt-16" bindtap="onAddTemplate">+ 添加时段模板</button>
+  </view>
+
+  <!-- 常用地点 -->
+  <view class="card">
+    <view class="card-header">常用上课地点</view>
+    <view wx:if="{{settings.common_locations.length > 0}}">
+      <view class="location-item" wx:for="{{settings.common_locations}}" wx:key="*this">
+        <text class="location-name">📍 {{item}}</text>
+        <text class="location-delete" data-index="{{index}}" bindtap="onDeleteLocation">删除</text>
+      </view>
+    </view>
+    <view wx:else class="text-muted text-sm text-center py-24">暂无地点</view>
+    <view class="add-row mt-16">
+      <input class="add-input" placeholder="输入地点名称" value="{{newLocation}}" bindinput="onLocationInput" />
+      <button class="btn btn-primary btn-sm" bindtap="onAddLocation">添加</button>
+    </view>
+  </view>
+
+  <!-- 🔧 开发者调试：切换学员视角 -->
+  <view class="card mt-24">
+    <view class="card-header">🔧 开发者调试</view>
+    <view class="debug-row">
+      <text class="debug-label">以学员身份预览</text>
+      <picker range="{{studentNames}}" value="{{debugStudentIdx}}" bindchange="onDebugStudentChange">
+        <view class="debug-picker">
+          {{studentNames[debugStudentIdx] || '选择学员'}}
+        </view>
+      </picker>
+    </view>
+    <button class="btn btn-outline btn-sm btn-block mt-16" bindtap="onSwitchToStudent" disabled="{{!studentNames[debugStudentIdx]}}">
+      切换到学员端预览
+    </button>
+    <text class="debug-hint">开发者专用：切换后可体验学员端功能，重新打开小程序恢复教练身份</text>
+  </view>
+
+  <!-- 保存按钮 -->
+  <view class="safe-bottom" style="padding: 32rpx 0 40rpx;">
+    <button class="btn btn-primary btn-block" bindtap="onSave" loading="{{saving}}">保存设置</button>
+  </view>
+
+  <!-- 时段模板弹窗 -->
+  <view class="modal-wrapper" wx:if="{{templateVisible}}" catchtouchmove="noop">
+    <view class="modal-mask"></view>
+    <view class="modal-center">
+      <view class="modal-content">
+        <view class="modal-header">
+          <text class="modal-title">添加时段模板</text>
+          <view class="modal-close" bindtap="onCloseTemplate">✕</view>
+        </view>
+        <view class="form-group mt-16">
+          <text class="form-label">选择星期</text>
+          <view class="weekday-check">
+            <view class="wday-item {{newTemplate.days.indexOf(index) > -1 ? 'active' : ''}}" wx:for="{{['一','二','三','四','五','六','日']}}" wx:key="*this" data-day="{{index + 1}}" bindtap="onWeekdayTap">{{item}}</view>
+          </view>
+        </view>
+        <view class="form-row">
+          <view class="form-group flex-1">
+            <text class="form-label">开始时间</text>
+            <input class="form-input" value="{{newTemplate.startTime}}" placeholder="08:00" bindinput="onTemplateStartInput" />
+          </view>
+          <view class="form-group flex-1 ml-16">
+            <text class="form-label">结束时间</text>
+            <input class="form-input" value="{{newTemplate.endTime}}" placeholder="18:00" bindinput="onTemplateEndInput" />
+          </view>
+        </view>
+        <view class="modal-actions mt-24">
+          <button class="btn btn-ghost btn-sm flex-1" bindtap="onCloseTemplate">取消</button>
+          <button class="btn btn-primary btn-sm flex-1 ml-16" bindtap="onConfirmTemplate">确认</button>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

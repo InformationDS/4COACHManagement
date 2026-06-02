@@ -1,0 +1,8 @@
+{
+  "usingComponents": {
+    "calendar": "/components/calendar/calendar",
+    "time-grid": "/components/time-grid/time-grid",
+    "lesson-card": "/components/lesson-card/lesson-card"
+  },
+  "navigationBarTitleText": "课程"
+}

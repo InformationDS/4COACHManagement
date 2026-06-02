@@ -1,0 +1,9 @@
+<!-- pages/coach/training-record.wxml - 训练记录 -->
+<view class="container">
+  <view class="card">
+    <view class="card-header">训练记录</view>
+    <view class="card-body">
+      <text class="text-muted">此页面将在后续开发中实现</text>
+    </view>
+  </view>
+</view>

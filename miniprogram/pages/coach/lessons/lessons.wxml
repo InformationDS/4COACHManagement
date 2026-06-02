@@ -1,0 +1,114 @@
+<!-- pages/coach/lessons/lessons.wxml -->
+<view class="container">
+  <!-- 日历组件 -->
+  <calendar lessons="{{lessons}}" value="{{selectedDate}}" bind:change="onCalendarChange" />
+
+  <!-- 当日课程列表 -->
+  <view class="section-header mt-24">
+    <text class="section-title">{{selectedDate}} 课程</text>
+    <text class="section-count">共 {{todayLessons.length}} 节</text>
+  </view>
+
+  <view wx:if="{{todayLessons.length > 0}}">
+    <lesson-card
+      wx:for="{{todayLessons}}"
+      wx:key="_id"
+      lesson="{{item}}"
+      bind:tap="onLessonTap"
+    />
+  </view>
+  <view wx:else class="empty-state" style="padding: 60rpx 0;">
+    <text class="empty-state-text">当日暂无课程</text>
+  </view>
+
+  <!-- 排课 FAB -->
+  <view class="fab-wrapper safe-bottom">
+    <button class="fab" bindtap="onCreateLesson">
+      <text class="fab-icon">+</text>
+    </button>
+  </view>
+
+  <!-- ===== 排课弹窗 ===== -->
+  <view class="modal-wrapper" wx:if="{{showCreateModal}}" catchtouchmove="noop">
+    <view class="modal-mask"></view>
+    <view class="modal-center" style="width: 640rpx;">
+      <view class="modal-content">
+        <view class="modal-header">
+          <text class="modal-title">排课</text>
+          <view class="modal-close" bindtap="onCloseCreate">✕</view>
+        </view>
+        <view class="form-group mt-16">
+          <text class="form-label">日期</text>
+          <input class="form-input" value="{{selectedDate}}" disabled />
+        </view>
+        <view class="form-group">
+          <text class="form-label">选择学员</text>
+          <picker range="{{studentNames}}" value="{{studentIdx}}" bindchange="onStudentPickerChange">
+            <view class="form-input picker-display">
+              {{studentNames[studentIdx] || '请选择学员'}}
+            </view>
+          </picker>
+        </view>
+        <time-grid
+          duration="{{lessonDuration}}"
+          occupied="{{occupiedSlots}}"
+          bind:change="onTimeChange"
+        />
+        <view class="form-group mt-16">
+          <text class="form-label">上课地点</text>
+          <picker range="{{locations}}" value="{{locationIdx}}" bindchange="onLocationPickerChange">
+            <view class="form-input picker-display">
+              {{locations[locationIdx] || '请选择地点'}}
+            </view>
+          </picker>
+        </view>
+        <view class="modal-actions mt-24">
+          <button class="btn btn-ghost btn-sm flex-1" bindtap="onCloseCreate">取消</button>
+          <button class="btn btn-primary btn-sm flex-1 ml-16" bindtap="onConfirmCreate" loading="{{creating}}">确认排课</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 课程详情弹窗 ===== -->
+  <view class="modal-wrapper" wx:if="{{showDetailModal}}" catchtouchmove="noop">
+    <view class="modal-mask"></view>
+    <view class="modal-center" style="width: 600rpx;">
+      <view class="modal-content">
+        <view class="modal-header">
+          <text class="modal-title">课程详情</text>
+          <view class="modal-close" bindtap="onCloseDetail">✕</view>
+        </view>
+        <view class="detail-row mt-16">
+          <text class="detail-label">学员</text><text class="detail-value">{{detailLesson.student_name}}</text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">时间</text><text class="detail-value">{{detailLesson.date}} {{detailLesson.start_time}}-{{detailLesson.end_time}}</text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">地点</text><text class="detail-value">{{detailLesson.location || '未指定'}}</text>
+        </view>
+        <view class="detail-row">
+          <text class="detail-label">状态</text>
+          <view class="tag tag-{{detailLesson.status}}">
+            <text wx:if="{{detailLesson.status==='pending'}}">待确认</text>
+            <text wx:elif="{{detailLesson.status==='confirmed'}}">已确认</text>
+            <text wx:elif="{{detailLesson.status==='completed'}}">已完成</text>
+            <text wx:elif="{{detailLesson.status==='cancelled'}}">已取消</text>
+          </view>
+        </view>
+        <!-- 操作按钮 -->
+        <view class="detail-actions mt-32" wx:if="{{detailLesson.status==='pending' || detailLesson.status==='confirmed'}}">
+          <block wx:if="{{detailLesson.status==='pending'}}">
+            <button class="btn btn-primary btn-sm flex-1" bindtap="onConfirmLesson">确认</button>
+            <button class="btn btn-outline btn-sm flex-1 ml-16" bindtap="onCancelLesson">取消</button>
+          </block>
+          <block wx:if="{{detailLesson.status==='confirmed'}}">
+            <button class="btn btn-primary btn-sm flex-1" bindtap="onCompleteLesson">标记完成</button>
+            <button class="btn btn-outline btn-sm flex-1 ml-16" bindtap="onCancelLesson">取消课程</button>
+          </block>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

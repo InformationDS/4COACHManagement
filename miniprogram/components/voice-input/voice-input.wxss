@@ -1,0 +1,4 @@
+/* components/voice-input/voice-input.wxss */
+.voice-input-component {
+  padding: 24rpx;
+}

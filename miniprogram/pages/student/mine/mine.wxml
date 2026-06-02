@@ -1,0 +1,43 @@
+<!-- pages/student/mine/mine.wxml -->
+<view class="container-mine">
+  <!-- 头部 -->
+  <view class="mine-header">
+    <view class="mine-avatar">
+      <image wx:if="{{student.avatar_url}}" src="{{student.avatar_url}}" mode="aspectFill" />
+      <text wx:else class="avatar-text">{{student.name ? student.name[0] : '?'}}</text>
+    </view>
+    <text class="mine-name">{{student.name || '学员'}}</text>
+    <text class="mine-phone" wx:if="{{student.phone}}">{{student.phone}}</text>
+  </view>
+
+  <!-- 课时卡 -->
+  <view class="card mt-24">
+    <view class="card-header">我的课时卡</view>
+    <view class="lessons-big">{{student.remaining_lessons || 0}}</view>
+    <view class="lessons-label">剩余课时</view>
+    <view wx:if="{{logs.length > 0}}" class="mt-24">
+      <text class="section-title-sm">变动记录</text>
+      <view class="log-item" wx:for="{{logs}}" wx:key="_id">
+        <view class="log-left">
+          <text class="log-reason">{{item.reason || '无备注'}}</text>
+          <text class="log-date">{{item.timeText}}</text>
+        </view>
+        <text class="log-num {{item.change_amount > 0 ? 'text-success' : 'text-danger'}}">{{item.change_amount > 0 ? '+' : ''}}{{item.change_amount}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 其他信息 -->
+  <view class="card mt-24">
+    <view class="list-item list-item-arrow">
+      <text>上课地点偏好</text>
+      <text class="text-muted text-sm">{{student.location_preference || '未设置'}}</text>
+    </view>
+    <view class="list-item">
+      <text>特殊诉求</text>
+      <text class="text-muted text-sm">{{student.notes || '无'}}</text>
+    </view>
+  </view>
+
+  <student-tabbar active="mine" />
+</view>

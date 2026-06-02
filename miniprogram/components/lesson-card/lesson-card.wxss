@@ -1,0 +1,20 @@
+.lesson-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx;
+  background: var(--color-bg-white);
+  border-radius: var(--radius-md);
+  margin-bottom: 16rpx;
+  box-shadow: var(--shadow-sm);
+  border-left: 6rpx solid var(--color-border);
+}
+.lesson-card.status-pending { border-left-color: var(--color-warning); }
+.lesson-card.status-confirmed { border-left-color: var(--color-primary); }
+.lesson-card.status-completed { border-left-color: var(--color-success); }
+.lesson-card.status-cancelled { border-left-color: var(--color-text-light); }
+.lc-left { display: flex; flex-direction: column; }
+.lc-time-text { font-size: var(--font-md); font-weight: 600; color: var(--color-text); }
+.lc-location { font-size: var(--font-xs); color: var(--color-text-secondary); margin-top: 6rpx; }
+.lc-right { display: flex; flex-direction: column; align-items: flex-end; }
+.lc-student { font-size: var(--font-sm); color: var(--color-text); font-weight: 500; margin-bottom: 8rpx; }

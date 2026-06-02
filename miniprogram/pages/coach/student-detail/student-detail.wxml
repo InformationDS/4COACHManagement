@@ -1,0 +1,122 @@
+<!-- pages/coach/student-detail/student-detail.wxml - 学员详情/添加 -->
+<view class="container">
+  <block wx:if="{{loading}}">
+    <view class="empty-state">
+      <text class="empty-state-text">加载中...</text>
+    </view>
+  </block>
+
+  <block wx:else>
+    <!-- ===== 头像区域 ===== -->
+    <view class="avatar-section">
+      <view class="avatar-box" bindtap="onChooseAvatar">
+        <image wx:if="{{form.avatar_url}}" src="{{form.avatar_url}}" mode="aspectFill" />
+        <text wx:else class="avatar-box-placeholder">📷</text>
+        <view class="avatar-camera">📷</view>
+      </view>
+      <text class="avatar-hint">点击更换头像</text>
+    </view>
+
+    <!-- ===== 基本信息表单 ===== -->
+    <view class="card">
+      <view class="card-header">基本信息</view>
+
+      <view class="form-group">
+        <text class="form-label">姓名 <text class="required">*</text></text>
+        <input class="form-input" placeholder="学员姓名" value="{{form.name}}" data-field="name" bindinput="onFieldChange" />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">手机号 <text class="required">*</text></text>
+        <input class="form-input" type="number" maxlength="11" placeholder="手机号码" value="{{form.phone}}" data-field="phone" bindinput="onFieldChange" />
+      </view>
+
+      <view class="form-row">
+        <view class="form-group flex-1">
+          <text class="form-label">性别</text>
+          <view class="radio-group">
+            <view class="radio-item {{form.gender === 'male' ? 'active' : ''}}" data-value="male" bindtap="onGenderTap">男</view>
+            <view class="radio-item {{form.gender === 'female' ? 'active' : ''}}" data-value="female" bindtap="onGenderTap">女</view>
+          </view>
+        </view>
+        <view class="form-group flex-1 ml-16">
+          <text class="form-label">年龄</text>
+          <input class="form-input" type="number" placeholder="年龄" value="{{form.age}}" data-field="age" bindinput="onFieldChange" />
+        </view>
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">微信号</text>
+        <input class="form-input" placeholder="微信号（可选）" value="{{form.wechat}}" data-field="wechat" bindinput="onFieldChange" />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">上课地点偏好</text>
+        <input class="form-input" placeholder="如：XX健身房" value="{{form.location_preference}}" data-field="location_preference" bindinput="onFieldChange" />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">特殊诉求 / 备注</text>
+        <textarea class="form-textarea" placeholder="伤病、训练目标、饮食要求等..." value="{{form.notes}}" data-field="notes" bindinput="onFieldChange" />
+      </view>
+    </view>
+
+    <!-- ===== 课时卡管理（仅编辑模式） ===== -->
+    <view class="card" wx:if="{{isEdit}}">
+      <view class="card-header">课时卡</view>
+
+      <!-- 课时概览 -->
+      <view class="lessons-overview">
+        <view class="lessons-big">{{student.remaining_lessons || 0}}</view>
+        <view class="lessons-unit">剩余课时</view>
+      </view>
+
+      <!-- 充值/扣减按钮 -->
+      <view class="lessons-actions">
+        <button class="btn btn-primary btn-sm" bindtap="onRecharge">充值课时</button>
+        <button class="btn btn-outline btn-sm ml-16" bindtap="onDeduct">手动扣减</button>
+      </view>
+
+      <!-- 课时变动记录 -->
+      <view class="section-title mt-24">变动记录</view>
+      <view wx:if="{{lessonLogs.length > 0}}">
+        <view class="log-item" wx:for="{{lessonLogs}}" wx:key="_id">
+          <view class="log-info">
+            <text class="log-reason">{{item.reason || '无备注'}}</text>
+            <text class="log-time">{{item.timeText}}</text>
+          </view>
+          <text class="log-amount {{item.change_amount > 0 ? 'text-success' : 'text-danger'}}">
+            {{item.change_amount > 0 ? '+' : ''}}{{item.change_amount}}
+          </text>
+        </view>
+      </view>
+      <view wx:else class="text-muted text-sm text-center mt-16">暂无变动记录</view>
+    </view>
+
+    <!-- ===== 保存按钮 ===== -->
+    <view class="safe-bottom" style="padding: 32rpx 0 40rpx;">
+      <button class="btn btn-primary btn-block" bindtap="onSave" loading="{{saving}}" disabled="{{saving}}">
+        {{isEdit ? '保存修改' : '添加学员'}}
+      </button>
+    </view>
+  </block>
+
+  <!-- ===== 充值弹窗 ===== -->
+  <view class="modal-wrapper" wx:if="{{rechargeVisible}}" catchtouchmove="noop">
+    <view class="modal-mask"></view>
+    <view class="modal-center">
+      <view class="modal-content">
+        <view class="modal-header">
+          <text class="modal-title">{{rechargeMode === 'deduct' ? '扣减课时' : '充值课时'}}</text>
+          <view class="modal-close" bindtap="onCloseRecharge">✕</view>
+        </view>
+        <input class="form-input mt-24" type="number" placeholder="请输入课时数量" value="{{rechargeAmount}}" focus="{{rechargeVisible}}" bindinput="onRechargeInput" />
+        <input class="form-input mt-16" placeholder="备注（可选）" value="{{rechargeReason}}" bindinput="onRechargeReasonInput" />
+        <view class="modal-actions mt-32">
+          <button class="btn btn-ghost btn-sm flex-1" bindtap="onCloseRecharge">取消</button>
+          <button class="btn btn-primary btn-sm flex-1 ml-16" bindtap="onConfirmRecharge" loading="{{recharging}}">确认</button>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

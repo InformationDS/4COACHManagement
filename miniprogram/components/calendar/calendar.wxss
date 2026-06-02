@@ -1,0 +1,140 @@
+/* components/calendar/calendar.wxss */
+.calendar {
+  background: var(--color-bg-white);
+  border-radius: var(--radius-lg);
+  padding: 24rpx;
+  box-shadow: var(--shadow-sm);
+}
+
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20rpx;
+}
+
+.cal-nav {
+  width: 56rpx;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cal-arrow {
+  font-size: 40rpx;
+  color: var(--color-text-secondary);
+  line-height: 1;
+}
+
+.cal-title {
+  font-size: var(--font-md);
+  font-weight: 600;
+}
+
+/* 星期行 */
+.cal-weekdays {
+  display: flex;
+  margin-bottom: 12rpx;
+}
+
+.cal-weekday {
+  flex: 1;
+  text-align: center;
+  font-size: var(--font-xs);
+  color: var(--color-text-light);
+  padding: 8rpx 0;
+}
+
+/* 月视图格子 */
+.cal-grid {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.cal-day {
+  width: calc(100% / 7);
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+}
+
+.cal-day.other-month .cal-day-num {
+  color: var(--color-text-light);
+  opacity: 0.4;
+}
+
+.cal-day.today {
+  background: var(--color-primary-light);
+}
+
+.cal-day.today .cal-day-num {
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.cal-day.selected {
+  background: var(--color-primary);
+}
+
+.cal-day.selected .cal-day-num {
+  color: #fff;
+}
+
+.cal-day-num {
+  font-size: var(--font-sm);
+  color: var(--color-text);
+}
+
+/* 状态色点 */
+.cal-dots {
+  display: flex;
+  gap: 4rpx;
+  margin-top: 2rpx;
+}
+
+.cal-dot {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+}
+
+.cal-dot.dp { background: var(--color-warning); }
+.cal-dot.dc { background: var(--color-primary); }
+.cal-dot.dx { background: var(--color-text-light); }
+
+/* 周视图 */
+.cal-week-grid {
+  display: flex;
+  gap: 8rpx;
+  margin-bottom: 20rpx;
+}
+
+.cal-day.week-mode {
+  flex: 1;
+  height: 100rpx;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg);
+}
+
+.cal-day.week-mode.today {
+  background: var(--color-primary-light);
+}
+
+.cal-day.week-mode.selected {
+  background: var(--color-primary);
+  border: none;
+}
+
+/* 视图切换 */
+.cal-view-toggle {
+  text-align: center;
+  padding: 16rpx 0 4rpx;
+  font-size: var(--font-xs);
+  color: var(--color-primary);
+}

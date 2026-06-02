@@ -1,0 +1,34 @@
+<!-- pages/student/my-lessons/my-lessons.wxml -->
+<view class="container-lessons">
+  <view class="tab-row">
+    <view class="tab-item {{activeTab==='upcoming'?'active':''}}" bindtap="onTabTap" data-tab="upcoming">待上课</view>
+    <view class="tab-item {{activeTab==='history'?'active':''}}" bindtap="onTabTap" data-tab="history">历史</view>
+  </view>
+
+  <view wx:if="{{showList.length > 0}}">
+    <view class="lesson-card" wx:for="{{showList}}" wx:key="_id" bindtap="onTap" data-id="{{item._id}}">
+      <view class="lc-status {{item.status}}"></view>
+      <view class="lc-body">
+        <view class="lc-top">
+          <text class="lc-date">{{item.dateText}}</text>
+          <view class="tag tag-{{item.status}}">
+            <text wx:if="{{item.status==='pending'}}">待确认</text>
+            <text wx:elif="{{item.status==='confirmed'}}">已确认</text>
+            <text wx:elif="{{item.status==='completed'}}">已完成</text>
+            <text wx:elif="{{item.status==='cancelled'}}">已取消</text>
+          </view>
+        </view>
+        <view class="lc-mid">
+          <text class="lc-time">{{item.start_time}} - {{item.end_time}}</text>
+        </view>
+        <text class="lc-location" wx:if="{{item.location}}">📍 {{item.location}}</text>
+      </view>
+    </view>
+  </view>
+  <view wx:else class="empty-state">
+    <text class="empty-state-icon">{{activeTab==='upcoming'?'📅':'📭'}}</text>
+    <text class="empty-state-text">{{activeTab==='upcoming'?'暂无待上课程':'暂无课程历史'}}</text>
+  </view>
+
+  <student-tabbar active="lessons" />
+</view>

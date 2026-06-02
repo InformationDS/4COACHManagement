@@ -1,0 +1,63 @@
+<!-- pages/student/booking/booking.wxml -->
+<view class="container-booking">
+  <!-- 日历 -->
+  <calendar value="{{selectedDate}}" lessons="{{allLessons}}" bind:change="onCalendarChange" />
+
+  <!-- 当日课程列表 -->
+  <view class="section-header mt-24" wx:if="{{todayLessons.length > 0}}">
+    <text class="section-title">{{selectedDate}} 我的课程</text>
+  </view>
+  <view wx:if="{{todayLessons.length > 0}}" class="today-lessons">
+    <view class="tlesson-card" wx:for="{{todayLessons}}" wx:key="_id" bindtap="onLessonTap" data-id="{{item._id}}">
+      <view class="tl-status {{item.status}}"></view>
+      <view class="tl-body">
+        <view class="tl-row">
+          <text class="tl-time">{{item.start_time}} - {{item.end_time}}</text>
+          <view class="tag tag-{{item.status}}">
+            <text wx:if="{{item.status==='pending'}}">待确认</text>
+            <text wx:elif="{{item.status==='confirmed'}}">已确认</text>
+            <text wx:elif="{{item.status==='completed'}}">已完成</text>
+            <text wx:elif="{{item.status==='cancelled'}}">已取消</text>
+          </view>
+        </view>
+        <text class="tl-location" wx:if="{{item.location}}">📍 {{item.location}}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 今日可约时段 -->
+  <view class="section-header mt-24">
+    <text class="section-title">{{selectedDate}} 可约时段</text>
+    <text class="text-xs text-muted" wx:if="{{remainingLessonTip}}">{{remainingLessonTip}}</text>
+  </view>
+
+  <time-grid
+    wx:if="{{showTimeGrid}}"
+    title=""
+    startTime="{{startTime}}"
+    endTime="{{endTime}}"
+    duration="{{lessonDuration}}"
+    occupied="{{occupiedSlots}}"
+    bind:change="onTimeChange"
+  />
+  <view wx:if="{{dayOff}}" class="empty-state" style="padding:40rpx 0">
+    <text class="empty-state-text">{{isPastDate ? '此日期已过，不可约课' : '此日期教练未开放约课'}}</text>
+  </view>
+
+  <!-- 已选摘要 -->
+  <view class="book-summary" wx:if="{{selectedTime}}">
+    <view class="summary-row">
+      <text class="summary-label">日期</text>
+      <text class="summary-value">{{selectedDate}}</text>
+    </view>
+    <view class="summary-row">
+      <text class="summary-label">时间</text>
+      <text class="summary-value">{{selectedTime}}</text>
+    </view>
+    <button class="btn btn-primary btn-block mt-24" bindtap="onSubmit" loading="{{booking}}" disabled="{{booking || remaining <= 0}}">
+      {{remaining <= 0 ? '课时不足，无法约课' : '确认约课'}}
+    </button>
+  </view>
+
+  <student-tabbar active="booking" />
+</view>

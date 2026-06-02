@@ -1,0 +1,4 @@
+<!-- components/voice-input/voice-input.wxml -->
+<view class="voice-input-component">
+  <text class="text-muted text-sm">voice-input 组件占位</text>
+</view>

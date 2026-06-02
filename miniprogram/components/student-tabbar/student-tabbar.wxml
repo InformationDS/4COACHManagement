@@ -1,0 +1,15 @@
+<!-- components/student-tabbar/student-tabbar.wxml -->
+<view class="stabbar safe-bottom">
+  <view class="stabbar-item {{active==='booking'?'active':''}}" data-page="booking" bindtap="onTap">
+    <text class="stabbar-icon">📅</text>
+    <text class="stabbar-text">约课</text>
+  </view>
+  <view class="stabbar-item {{active==='lessons'?'active':''}}" data-page="lessons" bindtap="onTap">
+    <text class="stabbar-icon">📋</text>
+    <text class="stabbar-text">我的课</text>
+  </view>
+  <view class="stabbar-item {{active==='mine'?'active':''}}" data-page="mine" bindtap="onTap">
+    <text class="stabbar-icon">👤</text>
+    <text class="stabbar-text">我的</text>
+  </view>
+</view>

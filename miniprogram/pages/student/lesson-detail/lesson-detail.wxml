@@ -1,0 +1,61 @@
+<!-- pages/student/lesson-detail/lesson-detail.wxml -->
+<view class="container">
+  <view wx:if="{{loading}}" class="empty-state"><text class="empty-state-text">加载中...</text></view>
+
+  <block wx:if="{{!loading && lesson._id}}">
+    <!-- 课程信息卡片 -->
+    <view class="card">
+      <view class="detail-header">
+        <view class="tag tag-{{lesson.status}}">
+          <text wx:if="{{lesson.status==='pending'}}">待确认</text>
+          <text wx:elif="{{lesson.status==='confirmed'}}">已确认</text>
+          <text wx:elif="{{lesson.status==='completed'}}">已完成</text>
+          <text wx:elif="{{lesson.status==='cancelled'}}">已取消</text>
+        </view>
+      </view>
+      <view class="detail-row"><text class="dl">日期</text><text class="dv">{{lesson.date}}</text></view>
+      <view class="detail-row"><text class="dl">时间</text><text class="dv">{{lesson.start_time}} - {{lesson.end_time}}</text></view>
+      <view class="detail-row"><text class="dl">地点</text><text class="dv">{{lesson.location || '未指定'}}</text></view>
+      <view class="detail-row"><text class="dl">教练</text><text class="dv">教练</text></view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-bar" wx:if="{{lesson.status==='pending' || lesson.status==='confirmed'}}">
+      <block wx:if="{{lesson.status==='pending' && lesson.initiated_by==='coach'}}">
+        <button class="btn btn-primary btn-block" bindtap="onConfirm">确认课程</button>
+        <button class="btn btn-outline btn-block mt-16" bindtap="onCancel">暂不参加</button>
+      </block>
+      <block wx:elif="{{lesson.status==='pending' && lesson.initiated_by==='student'}}">
+        <button class="btn btn-outline btn-block" bindtap="onCancel">取消约课</button>
+      </block>
+      <block wx:elif="{{lesson.status==='confirmed'}}">
+        <text class="text-muted text-sm text-center" style="display:block;padding:24rpx 0">课程已确认，如需取消请联系教练</text>
+      </block>
+    </view>
+
+    <!-- 训练记录 -->
+    <view class="card mt-24" wx:if="{{lesson.status==='completed'}}">
+      <view class="card-header">训练记录</view>
+      <block wx:if="{{trainingRecord}}">
+        <view class="train-section" wx:if="{{trainingRecord.body_parts.length > 0}}">
+          <text class="train-label">训练部位</text>
+          <view class="train-tags">
+            <text class="tag-text" wx:for="{{trainingRecord.body_parts}}" wx:key="*this">{{item}}</text>
+          </view>
+        </view>
+        <view class="train-section" wx:if="{{trainingRecord.exercises.length > 0}}">
+          <text class="train-label">动作明细</text>
+          <view class="ex-row" wx:for="{{trainingRecord.exercises}}" wx:key="index">
+            <text class="ex-name">{{item.name}}</text>
+            <text class="ex-data">{{item.sets}}×{{item.reps}} {{item.weight}}</text>
+          </view>
+        </view>
+        <view class="train-section" wx:if="{{trainingRecord.notes}}">
+          <text class="train-label">课堂备注</text>
+          <text class="train-notes">{{trainingRecord.notes}}</text>
+        </view>
+      </block>
+      <view wx:else class="text-muted text-sm text-center py-24">暂无训练记录</view>
+    </view>
+  </block>
+</view>

@@ -1,0 +1,4 @@
+{
+  "usingComponents": { "student-tabbar": "/components/student-tabbar/student-tabbar" },
+  "navigationBarTitleText": "我的课程"
+}

@@ -1,0 +1,1 @@
+.stabbar{display:flex;background:#fff;border-top:1rpx solid var(--color-divider);position:fixed;bottom:0;left:0;right:0;z-index:500}.stabbar-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:12rpx 0 4rpx;font-size:var(--font-xs);color:var(--color-text-light)}.stabbar-item.active{color:var(--color-primary)}.stabbar-icon{font-size:36rpx;margin-bottom:4rpx}
