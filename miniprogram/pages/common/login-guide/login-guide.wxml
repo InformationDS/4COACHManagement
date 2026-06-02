@@ -8,27 +8,43 @@
       <text class="guide-desc">自由私人教练的得力工具</text>
     </view>
 
-    <!-- 教练注册入口 -->
-    <view class="guide-section">
-      <view class="guide-section-title">我是教练</view>
-      <view class="guide-section-body">
-        <text class="guide-text">首次使用请绑定教练身份，然后即可管理学员和课程。</text>
-        <button class="btn btn-primary btn-block mt-24" bindtap="onBindCoach" loading="{{binding}}">
-          {{binding ? '绑定中...' : '绑定教练身份'}}
-        </button>
-      </view>
-    </view>
-
-    <!-- 学员提示 -->
-    <view class="guide-section divider-top">
-      <view class="guide-section-title">我是学员</view>
-      <view class="guide-section-body">
-        <text class="guide-text">请联系您的教练，教练添加您的信息后，您即可登录使用。</text>
-        <view class="guide-tip mt-16">
-          <text class="guide-tip-text">💡 提示：如果您已经收到教练的邀请，退出重进即可自动识别。</text>
+    <!-- 学员邀请绑定（通过分享链接进入） -->
+    <block wx:if="{{isStudentInvite}}">
+      <view class="guide-section">
+        <view class="guide-section-title">欢迎，{{studentName || '学员'}}</view>
+        <view class="guide-section-body">
+          <text class="guide-text">您的教练已为您创建了账号，点击下方按钮绑定身份即可开始使用。</text>
+          <button class="btn btn-primary btn-block mt-24" bindtap="onBindStudent" loading="{{binding}}">
+            {{binding ? '绑定中...' : '绑定学员身份'}}
+          </button>
         </view>
       </view>
-    </view>
+    </block>
+
+    <!-- 正常入口：教练注册 + 学员提示 -->
+    <block wx:else>
+      <!-- 教练注册入口 -->
+      <view class="guide-section">
+        <view class="guide-section-title">我是教练</view>
+        <view class="guide-section-body">
+          <text class="guide-text">首次使用请绑定教练身份，然后即可管理学员和课程。</text>
+          <button class="btn btn-primary btn-block mt-24" bindtap="onBindCoach" loading="{{binding}}">
+            {{binding ? '绑定中...' : '绑定教练身份'}}
+          </button>
+        </view>
+      </view>
+
+      <!-- 学员提示 -->
+      <view class="guide-section divider-top">
+        <view class="guide-section-title">我是学员</view>
+        <view class="guide-section-body">
+          <text class="guide-text">请联系您的教练，教练添加您的信息后，您即可登录使用。</text>
+          <view class="guide-tip mt-16">
+            <text class="guide-tip-text">💡 提示：如果您已经收到教练的邀请，请点击教练发给您的链接进入。</text>
+          </view>
+        </view>
+      </view>
+    </block>
 
     <!-- 重新检测 -->
     <view class="guide-footer">

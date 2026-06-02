@@ -3,7 +3,7 @@
 .guide-container {
   min-height: 100vh;
   background: linear-gradient(180deg, #1a1a2e 0%, #16213e 40%, var(--color-bg) 40%);
-  padding: 60rpx 32rpx 120rpx;
+  padding: 60rpx 32rpx calc(env(safe-area-inset-bottom) + 120rpx);
 }
 
 .guide-brand {

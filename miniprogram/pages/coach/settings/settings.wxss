@@ -1,26 +1,57 @@
-.duration-row { display: flex; align-items: center; }
-.duration-input { width: 120rpx; height: 72rpx; background: var(--color-bg); border-radius: var(--radius-sm); text-align: center; font-size: var(--font-lg); font-weight: 600; color: var(--color-primary); }
-.duration-unit { margin-left: 12rpx; font-size: var(--font-sm); color: var(--color-text-secondary); }
-.template-item { display: flex; justify-content: space-between; align-items: center; padding: 20rpx 0; border-bottom: 1rpx solid var(--color-divider); }
-.template-info { display: flex; flex-direction: column; }
-.template-days { font-size: var(--font-sm); color: var(--color-primary); font-weight: 500; }
-.template-time { font-size: var(--font-xs); color: var(--color-text-secondary); margin-top: 4rpx; }
-.template-delete { font-size: var(--font-xs); color: var(--color-danger); padding: 8rpx; }
-.location-item { display: flex; justify-content: space-between; align-items: center; padding: 20rpx 0; border-bottom: 1rpx solid var(--color-divider); }
-.location-name { font-size: var(--font-sm); color: var(--color-text); }
-.location-delete { font-size: var(--font-xs); color: var(--color-danger); padding: 8rpx; }
-.add-row { display: flex; gap: 16rpx; align-items: center; }
-.add-input { flex: 1; height: 72rpx; padding: 0 20rpx; background: var(--color-bg); border-radius: var(--radius-sm); font-size: var(--font-sm); }
-.weekday-check { display: flex; gap: 12rpx; flex-wrap: wrap; }
-.wday-item { width: 72rpx; height: 72rpx; display: flex; align-items: center; justify-content: center; background: var(--color-bg); border-radius: 50%; font-size: var(--font-sm); }
-.wday-item.active { background: var(--color-primary); color: #fff; }
-.py-24 { padding: 24rpx 0; }
-.modal-wrapper { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; }
-.modal-mask { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); }
-.modal-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 600rpx; z-index: 1; }
-.modal-content { background: #fff; border-radius: var(--radius-lg); padding: 40rpx 32rpx; }
-.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8rpx; }
-.modal-title { font-size: var(--font-lg); font-weight: 600; }
-.modal-close { width: 48rpx; height: 48rpx; display: flex; align-items: center; justify-content: center; font-size: 32rpx; color: var(--color-text-light); }
-.modal-actions { display: flex; }
-.debug-row{display:flex;justify-content:space-between;align-items:center}.debug-label{font-size:var(--font-sm);color:var(--color-text)}.debug-picker{font-size:var(--font-sm);color:var(--color-primary);padding:12rpx 20rpx;background:var(--color-primary-light);border-radius:var(--radius-sm)}.debug-hint{font-size:20rpx;color:var(--color-text-light);text-align:center;display:block;margin-top:12rpx}
+/* 课程时长 */
+.duration-row{display:flex;align-items:center}
+.duration-input{width:120rpx;height:72rpx;background:var(--color-bg);border-radius:var(--radius-sm);text-align:center;font-size:var(--font-lg);font-weight:600;color:var(--color-primary)}
+.duration-unit{margin-left:12rpx;font-size:var(--font-sm);color:var(--color-text-secondary)}
+
+/* 每日工作时间 */
+.form-row{display:flex}
+
+/* 不可约时段列表 */
+.block-item{display:flex;justify-content:space-between;align-items:center;padding:20rpx 0;border-bottom:1rpx solid var(--color-divider)}
+.block-info{display:flex;flex-direction:column;flex:1}
+.block-days{font-size:var(--font-sm);color:var(--color-primary);font-weight:500}
+.block-time{font-size:var(--font-xs);color:var(--color-text-secondary);margin-top:4rpx}
+.block-note{font-size:var(--font-xs);color:var(--color-text-light);margin-top:2rpx}
+.block-delete{font-size:var(--font-xs);color:var(--color-danger);padding:8rpx}
+
+/* 常用地点 */
+.location-item{display:flex;justify-content:space-between;align-items:center;padding:20rpx 0;border-bottom:1rpx solid var(--color-divider)}
+.location-name{font-size:var(--font-sm);color:var(--color-text)}
+.location-delete{font-size:var(--font-xs);color:var(--color-danger);padding:8rpx}
+.add-row{display:flex;gap:16rpx;align-items:center}
+.add-input{flex:1;height:72rpx;padding:0 20rpx;background:var(--color-bg);border-radius:var(--radius-sm);font-size:var(--font-sm)}
+
+/* 星期选择 */
+.weekday-check{display:flex;gap:12rpx;flex-wrap:wrap}
+.wday-item{width:72rpx;height:72rpx;display:flex;align-items:center;justify-content:center;background:var(--color-bg);border-radius:50%;font-size:var(--font-sm)}
+.wday-item.active{background:var(--color-primary);color:#fff}
+
+/* 全天切换按钮 */
+.all-day-row{display:flex;justify-content:space-between;align-items:center}
+.all-day-label{font-size:var(--font-sm);color:var(--color-text-secondary)}
+.toggle-box{width:88rpx;height:48rpx;background:#d1d5db;border-radius:24rpx;position:relative;transition:background 0.2s}
+.toggle-box.active{background:var(--color-primary)}
+.toggle-knob{width:40rpx;height:40rpx;background:#fff;border-radius:50%;position:absolute;top:4rpx;left:4rpx;transition:left 0.2s;box-shadow:0 1rpx 4rpx rgba(0,0,0,0.15)}
+.toggle-box.active .toggle-knob{left:44rpx}
+
+/* 弹窗 */
+.modal-wrapper{position:fixed;top:0;left:0;right:0;bottom:0;z-index:1000}
+.modal-mask{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5)}
+.modal-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600rpx;z-index:1}
+.modal-content{background:#fff;border-radius:var(--radius-lg);padding:40rpx 32rpx}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8rpx}
+.modal-title{font-size:var(--font-lg);font-weight:600}
+.modal-close{width:48rpx;height:48rpx;display:flex;align-items:center;justify-content:center;font-size:32rpx;color:var(--color-text-light)}
+.modal-actions{display:flex}
+
+/* picker 模拟 */
+.picker-display{display:flex;align-items:center;color:var(--color-text)}
+
+/* 通用 */
+.py-24{padding:24rpx 0}
+
+/* 调试 */
+.debug-row{display:flex;justify-content:space-between;align-items:center}
+.debug-label{font-size:var(--font-sm);color:var(--color-text)}
+.debug-picker{font-size:var(--font-sm);color:var(--color-primary);padding:12rpx 20rpx;background:var(--color-primary-light);border-radius:var(--radius-sm)}
+.debug-hint{font-size:20rpx;color:var(--color-text-light);text-align:center;display:block;margin-top:12rpx}

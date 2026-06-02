@@ -1,4 +1,52 @@
 <!-- components/voice-input/voice-input.wxml -->
-<view class="voice-input-component">
-  <text class="text-muted text-sm">voice-input 组件占位</text>
+<view class="voice-wrap">
+  <!-- 录音按钮 -->
+  <view
+    class="voice-btn {{status === 'recording' ? 'recording' : ''}} {{status === 'recognizing' ? 'recognizing' : ''}}"
+    bindtouchstart="onTouchStart"
+    bindtouchend="onTouchEnd"
+    bindtouchcancel="onTouchCancel"
+    wx:if="{{status !== 'done'}}"
+  >
+    <!-- 波纹动画 -->
+    <view class="voice-ripple" wx:if="{{status === 'recording'}}">
+      <view class="ripple r1"></view>
+      <view class="ripple r2"></view>
+      <view class="ripple r3"></view>
+    </view>
+
+    <!-- 图标 -->
+    <view class="voice-icon">
+      <text wx:if="{{status === 'idle'}}">🎙️</text>
+      <text wx:elif="{{status === 'recording'}}">⏺️</text>
+      <text wx:elif="{{status === 'recognizing'}}">⏳</text>
+    </view>
+
+    <!-- 文字提示 -->
+    <text class="voice-label">
+      <block wx:if="{{status === 'idle'}}">长按录音</block>
+      <block wx:elif="{{status === 'recording'}}">录音中 {{duration}}s</block>
+      <block wx:elif="{{status === 'recognizing'}}">识别中...</block>
+    </text>
+  </view>
+
+  <!-- 完成状态：显示文本输入区域 -->
+  <view class="voice-done" wx:if="{{status === 'done'}}">
+    <view class="voice-done-header">
+      <text class="voice-done-title">📝 输入训练内容</text>
+      <text class="voice-done-hint">描述训练内容，AI 将自动结构化</text>
+    </view>
+    <textarea
+      class="voice-textarea"
+      placeholder="例：今天练胸，杠铃卧推 60kg 4组12次，上斜哑铃飞鸟 15kg 3组15次，最后龙门架夹胸收尾。小明状态不错"
+      value="{{text}}"
+      bindinput="onTextInput"
+      maxlength="500"
+      auto-height
+    ></textarea>
+    <view class="voice-actions">
+      <button class="btn btn-sm btn-ghost flex-1" bindtap="onClear">重新录音</button>
+      <button class="btn btn-sm btn-primary flex-1 ml-16" bindtap="onSubmitText">提交解析</button>
+    </view>
+  </view>
 </view>

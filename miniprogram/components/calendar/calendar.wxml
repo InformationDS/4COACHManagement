@@ -18,7 +18,7 @@
     </view>
     <view class="cal-grid">
       <view
-        class="cal-day {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? '' : 'other-month'}} {{item.date === selectedDate ? 'selected' : ''}} {{item.hasPending ? 'dot-pending' : ''}} {{item.hasConfirmed ? 'dot-confirmed' : ''}} {{item.hasCancelled ? 'dot-cancelled' : ''}}"
+        class="cal-day {{item.isToday ? 'today' : ''}} {{item.isCurrentMonth ? '' : 'other-month'}} {{item.date === selectedDate ? 'selected' : ''}} {{item.hasPending ? 'dot-pending' : ''}} {{item.hasConfirmed ? 'dot-confirmed' : ''}} {{item.hasCancelled ? 'dot-cancelled' : ''}} {{item.hasCompleted ? 'dot-completed' : ''}}"
         wx:for="{{monthDays}}"
         wx:key="date"
         data-date="{{item.date}}"
@@ -29,6 +29,7 @@
           <view class="cal-dot dp" wx:if="{{item.hasPending}}"></view>
           <view class="cal-dot dc" wx:if="{{item.hasConfirmed}}"></view>
           <view class="cal-dot dx" wx:if="{{item.hasCancelled}}"></view>
+          <view class="cal-dot dco" wx:if="{{item.hasCompleted}}"></view>
         </view>
       </view>
     </view>
@@ -43,7 +44,7 @@
     </view>
     <view class="cal-week-grid">
       <view
-        class="cal-day week-mode {{item.isToday ? 'today' : ''}} {{item.date === selectedDate ? 'selected' : ''}} {{item.hasPending ? 'dot-pending' : ''}} {{item.hasConfirmed ? 'dot-confirmed' : ''}}"
+        class="cal-day week-mode {{item.isToday ? 'today' : ''}} {{item.date === selectedDate ? 'selected' : ''}} {{item.hasPending ? 'dot-pending' : ''}} {{item.hasConfirmed ? 'dot-confirmed' : ''}} {{item.hasCompleted ? 'dot-completed' : ''}}"
         wx:for="{{weekDays}}"
         wx:key="date"
         data-date="{{item.date}}"
@@ -52,6 +53,7 @@
         <view class="cal-dots" wx:if="{{item.hasLessons}}">
           <view class="cal-dot dp" wx:if="{{item.hasPending}}"></view>
           <view class="cal-dot dc" wx:if="{{item.hasConfirmed}}"></view>
+          <view class="cal-dot dco" wx:if="{{item.hasCompleted}}"></view>
         </view>
       </view>
     </view>

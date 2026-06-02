@@ -107,6 +107,7 @@
 .cal-dot.dp { background: var(--color-warning); }
 .cal-dot.dc { background: var(--color-primary); }
 .cal-dot.dx { background: var(--color-text-light); }
+.cal-dot.dco { background: var(--color-success); }
 
 /* 周视图 */
 .cal-week-grid {

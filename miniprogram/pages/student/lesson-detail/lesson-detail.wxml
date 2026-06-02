@@ -17,6 +17,7 @@
       <view class="detail-row"><text class="dl">时间</text><text class="dv">{{lesson.start_time}} - {{lesson.end_time}}</text></view>
       <view class="detail-row"><text class="dl">地点</text><text class="dv">{{lesson.location || '未指定'}}</text></view>
       <view class="detail-row"><text class="dl">教练</text><text class="dv">教练</text></view>
+      <view wx:if="{{lesson.cancel_reason}}" class="detail-row"><text class="dl">取消原因</text><text class="dv text-muted">{{lesson.cancel_reason}}</text></view>
     </view>
 
     <!-- 操作按钮 -->
@@ -29,7 +30,7 @@
         <button class="btn btn-outline btn-block" bindtap="onCancel">取消约课</button>
       </block>
       <block wx:elif="{{lesson.status==='confirmed'}}">
-        <text class="text-muted text-sm text-center" style="display:block;padding:24rpx 0">课程已确认，如需取消请联系教练</text>
+        <button class="btn btn-outline btn-block" bindtap="onCancel">取消课程</button>
       </block>
     </view>
 
@@ -58,4 +59,32 @@
       <view wx:else class="text-muted text-sm text-center py-24">暂无训练记录</view>
     </view>
   </block>
+
+  <!-- ===== 取消课程弹窗 ===== -->
+  <view class="modal-wrapper" wx:if="{{showCancelModal}}" catchtouchmove="noop">
+    <view class="modal-mask"></view>
+    <view class="modal-center" style="width: 560rpx;">
+      <view class="modal-content">
+        <view class="modal-header">
+          <text class="modal-title">取消课程</text>
+          <view class="modal-close" bindtap="onCloseCancelModal">✕</view>
+        </view>
+        <view class="form-group mt-16">
+          <text class="form-label">取消原因（选填）</text>
+          <textarea
+            class="form-textarea"
+            placeholder="请输入取消原因（如：临时有事、身体不适...）"
+            value="{{cancelReason}}"
+            bindinput="onCancelReasonInput"
+            maxlength="100"
+            auto-height
+          ></textarea>
+        </view>
+        <view class="modal-actions mt-24">
+          <button class="btn btn-ghost btn-sm flex-1" bindtap="onCloseCancelModal">返回</button>
+          <button class="btn btn-danger btn-sm flex-1 ml-16" bindtap="onConfirmCancel">确认取消</button>
+        </view>
+      </view>
+    </view>
+  </view>
 </view>

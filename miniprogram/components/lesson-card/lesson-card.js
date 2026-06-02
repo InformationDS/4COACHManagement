@@ -5,7 +5,7 @@ Component({
   },
   methods: {
     onTap() {
-      this.triggerEvent('tap', { lesson: this.data.lesson });
+      this.triggerEvent('lessontap', { lesson: this.data.lesson });
     }
   }
 });

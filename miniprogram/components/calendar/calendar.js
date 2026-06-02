@@ -97,10 +97,11 @@ Component({
       const map = {};
       (this.data.lessons || this.properties.lessons || []).forEach(l => {
         const d = typeof l.date === 'string' ? l.date : formatDate(l.date);
-        if (!map[d]) map[d] = { pending: false, confirmed: false, cancelled: false };
+        if (!map[d]) map[d] = { pending: false, confirmed: false, cancelled: false, completed: false };
         if (l.status === 'pending') map[d].pending = true;
         if (l.status === 'confirmed') map[d].confirmed = true;
         if (l.status === 'cancelled') map[d].cancelled = true;
+        if (l.status === 'completed') map[d].completed = true;
       });
       return map;
     },
@@ -111,7 +112,8 @@ Component({
         hasLessons: !!s,
         hasPending: s ? s.pending : false,
         hasConfirmed: s ? s.confirmed : false,
-        hasCancelled: s ? s.cancelled : false
+        hasCancelled: s ? s.cancelled : false,
+        hasCompleted: s ? s.completed : false
       };
     },
 

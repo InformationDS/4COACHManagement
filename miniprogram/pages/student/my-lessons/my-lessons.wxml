@@ -29,6 +29,4 @@
     <text class="empty-state-icon">{{activeTab==='upcoming'?'📅':'📭'}}</text>
     <text class="empty-state-text">{{activeTab==='upcoming'?'暂无待上课程':'暂无课程历史'}}</text>
   </view>
-
-  <student-tabbar active="lessons" />
 </view>

@@ -59,11 +59,26 @@ function getRoleName(role) {
   return nameMap[role] || '未知';
 }
 
+/**
+ * 根据角色导航到首页（自动选择 switchTab / redirectTo）
+ * @param {'coach' | 'student' | 'unknown'} role
+ */
+function navigateToHome(role) {
+  const path = getHomePath(role);
+  // login-guide 不是 tabBar 页面，用 redirectTo；其他都是 tabBar 页面，用 switchTab
+  if (path.includes('login-guide')) {
+    wx.redirectTo({ url: path });
+  } else {
+    wx.switchTab({ url: path });
+  }
+}
+
 module.exports = {
   getRole,
   isCoach,
   isStudent,
   isRegistered,
   getHomePath,
-  getRoleName
+  getRoleName,
+  navigateToHome
 };

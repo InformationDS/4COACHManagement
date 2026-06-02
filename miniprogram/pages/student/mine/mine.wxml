@@ -27,17 +27,51 @@
     </view>
   </view>
 
-  <!-- 其他信息 -->
+  <!-- 可编辑信息 -->
   <view class="card mt-24">
-    <view class="list-item list-item-arrow">
+    <view class="list-item list-item-arrow" bindtap="onEditLocation">
       <text>上课地点偏好</text>
-      <text class="text-muted text-sm">{{student.location_preference || '未设置'}}</text>
+      <text class="text-muted text-sm">{{student.location_preference || '未设置，点击编辑'}}</text>
     </view>
-    <view class="list-item">
+    <view class="list-item list-item-arrow" bindtap="onEditNotes">
       <text>特殊诉求</text>
-      <text class="text-muted text-sm">{{student.notes || '无'}}</text>
+      <text class="text-muted text-sm">{{student.notes || '未设置，点击编辑'}}</text>
     </view>
   </view>
 
-  <student-tabbar active="mine" />
+  <!-- ===== 编辑弹窗 ===== -->
+  <view class="modal-wrapper" wx:if="{{editModalVisible}}" catchtouchmove="noop">
+    <view class="modal-mask" bindtap="onCloseEdit"></view>
+    <view class="modal-center">
+      <view class="modal-content">
+        <view class="modal-header">
+          <text class="modal-title">编辑{{editLabel}}</text>
+          <view class="modal-close" bindtap="onCloseEdit">✕</view>
+        </view>
+        <view class="form-group mt-16">
+          <textarea
+            wx:if="{{editField === 'notes'}}"
+            class="form-textarea"
+            placeholder="请输入特殊诉求（如伤病、训练目标、饮食要求等）"
+            value="{{editValue}}"
+            bindinput="onEditInput"
+            maxlength="200"
+            auto-height
+          />
+          <input
+            wx:else
+            class="form-input"
+            placeholder="请输入上课地点偏好"
+            value="{{editValue}}"
+            bindinput="onEditInput"
+            maxlength="50"
+          />
+        </view>
+        <view class="modal-actions mt-24">
+          <button class="btn btn-ghost btn-sm flex-1" bindtap="onCloseEdit">取消</button>
+          <button class="btn btn-primary btn-sm flex-1 ml-16" bindtap="onSaveEdit" loading="{{editing}}">保存</button>
+        </view>
+      </view>
+    </view>
+  </view>
 </view>

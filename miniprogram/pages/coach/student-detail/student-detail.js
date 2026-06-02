@@ -166,6 +166,23 @@ Page({
     }
   },
 
+  // ===== 分享邀请学员 =====
+
+  onShareToStudent() {
+    // 触发微信分享对话框（配合 WXML 的 open-type="share"）
+    // onShareAppMessage 会自动被调用
+  },
+
+  onShareAppMessage() {
+    const { student, studentId } = this.data;
+    const app = getApp();
+    return {
+      title: `${student.name || '学员'}，快来绑定你的私教助手`,
+      path: `/pages/common/login-guide/login-guide?student_id=${studentId}&coach_openid=${app.globalData.openid}`,
+      imageUrl: student.avatar_url || ''
+    };
+  },
+
   // ===== 课时卡管理 =====
 
   onRecharge() {

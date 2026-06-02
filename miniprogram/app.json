@@ -13,6 +13,7 @@
     "pages/common/login-guide/login-guide"
   ],
   "tabBar": {
+    "custom": true,
     "color": "#9ca3af",
     "selectedColor": "#2d6ff7",
     "backgroundColor": "#ffffff",
@@ -28,6 +29,18 @@
       },
       {
         "pagePath": "pages/coach/settings/settings",
+        "text": "我的"
+      },
+      {
+        "pagePath": "pages/student/booking/booking",
+        "text": "约课"
+      },
+      {
+        "pagePath": "pages/student/my-lessons/my-lessons",
+        "text": "课程"
+      },
+      {
+        "pagePath": "pages/student/mine/mine",
         "text": "我的"
       }
     ]

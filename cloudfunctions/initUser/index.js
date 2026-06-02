@@ -9,7 +9,7 @@ const db = cloud.database();
 exports.main = async (event, context) => {
   const wxContext = cloud.getWXContext();
   const openid = wxContext.OPENID;
-  const { role, student_id, name, phone } = event;
+  const { role, student_id, coach_openid, name, phone } = event;
 
   // 参数校验
   if (!role || !['coach', 'student'].includes(role)) {
@@ -68,6 +68,7 @@ exports.main = async (event, context) => {
           _openid: openid,
           role: 'student',
           student_id,
+          coach_openid: coach_openid || '',
           name: student.data.name,
           phone: student.data.phone || '',
           created_at: new Date(),

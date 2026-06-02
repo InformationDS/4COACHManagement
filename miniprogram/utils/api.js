@@ -116,10 +116,17 @@ async function getLessons(filters = {}) {
   if (role === 'coach') {
     query = query.where({ coach_openid: app.globalData.openid });
   } else {
-    // 学员只看自己的课程 - 需要通过 student_id
+    // 学员查看自己的课程 — 优先 student_id，兜底用 coach_openid + 学员 openid
     const userInfo = app.globalData.userInfo;
     if (userInfo && userInfo.student_id) {
       query = query.where({ student_id: userInfo.student_id });
+    } else if (userInfo && userInfo.coach_openid) {
+      query = query.where({
+        coach_openid: userInfo.coach_openid,
+        _openid: app.globalData.openid
+      });
+    } else {
+      query = query.where({ coach_openid: '' }); // 返回空结果
     }
   }
 
@@ -232,11 +239,13 @@ async function addLessonCardLog(data) {
 
 /**
  * 获取教练设置
+ * @param {string} coachOpenid - 教练 openid（学员端必须传入，教练端可不传）
  */
-async function getCoachSettings() {
+async function getCoachSettings(coachOpenid) {
   const app = getApp();
+  const targetOpenid = coachOpenid || app.globalData.openid;
   const res = await db.collection('coach_settings')
-    .where({ openid: app.globalData.openid })
+    .where({ openid: targetOpenid })
     .get();
   return res.data[0] || null;
 }
@@ -263,6 +272,54 @@ async function saveCoachSettings(data) {
       }
     });
   }
+}
+
+// ===== 订阅消息 =====
+
+/**
+ * 发送订阅消息（通过云函数）
+ * 通知失败不中断主流程，静默处理
+ * @param {object} options
+ * @param {string} options.scene - 场景: booking_notify | confirm_notify | cancel_notify | training_record
+ * @param {string} options.toOpenid - 接收者 openid
+ * @param {object} options.data - 模板数据 { thing1, thing2, time4, date5, phrase6, page }
+ */
+async function sendSubscribeMessage(options) {
+  try {
+    return await callCloud('sendSubscribeMsg', {
+      scene: options.scene,
+      toOpenid: options.toOpenid,
+      data: options.data
+    });
+  } catch (err) {
+    // 通知失败不中断主流程
+    console.warn('发送订阅消息失败:', err);
+    return { success: false };
+  }
+}
+
+/**
+ * 获取学员的 openid（教练端用于发送通知）
+ * @param {string} studentId - 学员 _id
+ * @returns {Promise<string|null>} openid 或 null
+ */
+async function getStudentOpenid(studentId) {
+  try {
+    const student = await getStudentDetail(studentId);
+    return student.openid || null;
+  } catch (e) {
+    console.warn('获取学员 openid 失败:', e);
+    return null;
+  }
+}
+
+/**
+ * 获取教练的 openid（学员端用于发送通知）
+ * @param {string} coachOpenid - 教练 openid
+ * @returns {Promise<string>} coach openid
+ */
+async function getCoachOpenid(coachOpenid) {
+  return coachOpenid; // 教练 openid 即为通知目标
 }
 
 // ===== 云存储 =====
@@ -307,6 +364,9 @@ module.exports = {
   addLessonCardLog,
   getCoachSettings,
   saveCoachSettings,
+  sendSubscribeMessage,
+  getStudentOpenid,
+  getCoachOpenid,
   uploadImage,
   deleteCloudFiles,
   _ // 数据库查询指令

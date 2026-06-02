@@ -9,22 +9,53 @@
     </view>
   </view>
 
-  <!-- 可约时段模板 -->
+  <!-- 每日工作时间 -->
   <view class="card">
-    <view class="card-header">可约时段模板</view>
-    <view wx:if="{{templates.length > 0}}">
-      <view class="template-item" wx:for="{{templates}}" wx:key="index">
-        <view class="template-info">
-          <text class="template-days">{{item.daysText}}</text>
-          <text class="template-time" wx:for="{{item.timeRanges}}" wx:key="*this" wx:for-item="range">
-            {{range.start}} - {{range.end}}
-          </text>
-        </view>
-        <view class="template-delete" data-index="{{index}}" bindtap="onDeleteTemplate">删除</view>
+    <view class="card-header">每日工作时间</view>
+    <view class="form-row">
+      <view class="form-group flex-1">
+        <text class="form-label">开始</text>
+        <input class="form-input" type="time" value="{{settings.daily_start_time}}" bindinput="onDailyStartInput" />
+      </view>
+      <view class="form-group flex-1 ml-16">
+        <text class="form-label">结束</text>
+        <input class="form-input" type="time" value="{{settings.daily_end_time}}" bindinput="onDailyEndInput" />
       </view>
     </view>
-    <view wx:else class="text-muted text-sm text-center py-24">暂无时段模板，点击下方添加</view>
-    <button class="btn btn-outline btn-sm btn-block mt-16" bindtap="onAddTemplate">+ 添加时段模板</button>
+  </view>
+
+  <!-- 循环不可约（每周固定） -->
+  <view class="card">
+    <view class="card-header">🔁 循环不可约（每周固定）</view>
+    <view wx:if="{{recurringBlocks.length > 0}}">
+      <view class="block-item" wx:for="{{recurringBlocks}}" wx:key="_idx">
+        <view class="block-info">
+          <text class="block-days">📅 周{{item.daysText}}</text>
+          <text class="block-time">{{item.timeText}}</text>
+          <text class="block-note" wx:if="{{item.note}}">{{item.note}}</text>
+        </view>
+        <view class="block-delete" data-index="{{item._idx}}" bindtap="onDeleteRecurring">删除</view>
+      </view>
+    </view>
+    <view wx:else class="text-muted text-sm text-center py-24">暂无循环规则，点击下方添加</view>
+    <button class="btn btn-outline btn-sm btn-block mt-16" bindtap="onOpenRecurring">+ 添加循环规则</button>
+  </view>
+
+  <!-- 特定日期不可约 -->
+  <view class="card">
+    <view class="card-header">📅 特定日期不可约</view>
+    <view wx:if="{{dateBlocks.length > 0}}">
+      <view class="block-item" wx:for="{{dateBlocks}}" wx:key="_idx">
+        <view class="block-info">
+          <text class="block-days">{{item.date}}</text>
+          <text class="block-time">{{item.timeText}}</text>
+          <text class="block-note" wx:if="{{item.note}}">{{item.note}}</text>
+        </view>
+        <view class="block-delete" data-index="{{item._idx}}" bindtap="onDeleteDateBlock">删除</view>
+      </view>
+    </view>
+    <view wx:else class="text-muted text-sm text-center py-24">暂无特定日期屏蔽，点击下方添加</view>
+    <button class="btn btn-outline btn-sm btn-block mt-16" bindtap="onOpenDateBlock">+ 添加特定日期</button>
   </view>
 
   <!-- 常用地点 -->
@@ -43,7 +74,7 @@
     </view>
   </view>
 
-  <!-- 🔧 开发者调试：切换学员视角 -->
+  <!-- 开发者调试 -->
   <view class="card mt-24">
     <view class="card-header">🔧 开发者调试</view>
     <view class="debug-row">
@@ -61,38 +92,89 @@
   </view>
 
   <!-- 保存按钮 -->
-  <view class="safe-bottom" style="padding: 32rpx 0 40rpx;">
+  <view class="safe-bottom" style="padding: 32rpx 0 0;">
     <button class="btn btn-primary btn-block" bindtap="onSave" loading="{{saving}}">保存设置</button>
   </view>
 
-  <!-- 时段模板弹窗 -->
-  <view class="modal-wrapper" wx:if="{{templateVisible}}" catchtouchmove="noop">
+  <!-- ===== 循环不可约弹窗 ===== -->
+  <view class="modal-wrapper" wx:if="{{recurringModal}}" catchtouchmove="noop">
     <view class="modal-mask"></view>
     <view class="modal-center">
       <view class="modal-content">
         <view class="modal-header">
-          <text class="modal-title">添加时段模板</text>
-          <view class="modal-close" bindtap="onCloseTemplate">✕</view>
+          <text class="modal-title">添加循环规则</text>
+          <view class="modal-close" bindtap="onCloseRecurring">✕</view>
         </view>
         <view class="form-group mt-16">
           <text class="form-label">选择星期</text>
           <view class="weekday-check">
-            <view class="wday-item {{newTemplate.days.indexOf(index) > -1 ? 'active' : ''}}" wx:for="{{['一','二','三','四','五','六','日']}}" wx:key="*this" data-day="{{index + 1}}" bindtap="onWeekdayTap">{{item}}</view>
+            <view class="wday-item {{recurringDays[index] ? 'active' : ''}}"
+              wx:for="{{['一','二','三','四','五','六','日']}}" wx:key="*this"
+              data-day="{{index}}" bindtap="onRecurringDayTap">{{item}}</view>
           </view>
         </view>
         <view class="form-row">
           <view class="form-group flex-1">
             <text class="form-label">开始时间</text>
-            <input class="form-input" value="{{newTemplate.startTime}}" placeholder="08:00" bindinput="onTemplateStartInput" />
+            <input class="form-input" type="time" value="{{recurringStartTime}}" bindinput="onRecurringStartInput" />
           </view>
           <view class="form-group flex-1 ml-16">
             <text class="form-label">结束时间</text>
-            <input class="form-input" value="{{newTemplate.endTime}}" placeholder="18:00" bindinput="onTemplateEndInput" />
+            <input class="form-input" type="time" value="{{recurringEndTime}}" bindinput="onRecurringEndInput" />
           </view>
         </view>
+        <view class="form-group">
+          <text class="form-label">备注（可选）</text>
+          <input class="form-input" placeholder="如：午休、自己训练" value="{{recurringNote}}" bindinput="onRecurringNoteInput" />
+        </view>
         <view class="modal-actions mt-24">
-          <button class="btn btn-ghost btn-sm flex-1" bindtap="onCloseTemplate">取消</button>
-          <button class="btn btn-primary btn-sm flex-1 ml-16" bindtap="onConfirmTemplate">确认</button>
+          <button class="btn btn-ghost btn-sm flex-1" bindtap="onCloseRecurring">取消</button>
+          <button class="btn btn-primary btn-sm flex-1 ml-16" bindtap="onConfirmRecurring">确认</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 特定日期不可约弹窗 ===== -->
+  <view class="modal-wrapper" wx:if="{{dateModal}}" catchtouchmove="noop">
+    <view class="modal-mask"></view>
+    <view class="modal-center">
+      <view class="modal-content">
+        <view class="modal-header">
+          <text class="modal-title">添加特定日期</text>
+          <view class="modal-close" bindtap="onCloseDateModal">✕</view>
+        </view>
+        <view class="form-group mt-16">
+          <text class="form-label">选择日期</text>
+          <picker mode="date" value="{{dateBlockDate}}" start="2026-01-01" bindchange="onDateChange">
+            <view class="form-input picker-display">{{dateBlockDateText}}</view>
+          </picker>
+        </view>
+        <view class="form-group">
+          <view class="all-day-row" bindtap="onDateAllDayToggle">
+            <text class="all-day-label">全天</text>
+            <view class="toggle-box {{dateBlockAllDay ? 'active' : ''}}">
+              <view class="toggle-knob"></view>
+            </view>
+          </view>
+        </view>
+        <view class="form-row" wx:if="{{!dateBlockAllDay}}">
+          <view class="form-group flex-1">
+            <text class="form-label">开始时间</text>
+            <input class="form-input" type="time" value="{{dateBlockStartTime}}" bindinput="onDateStartInput" />
+          </view>
+          <view class="form-group flex-1 ml-16">
+            <text class="form-label">结束时间</text>
+            <input class="form-input" type="time" value="{{dateBlockEndTime}}" bindinput="onDateEndInput" />
+          </view>
+        </view>
+        <view class="form-group">
+          <text class="form-label">备注（可选）</text>
+          <input class="form-input" placeholder="如：看医生、外出" value="{{dateBlockNote}}" bindinput="onDateNoteInput" />
+        </view>
+        <view class="modal-actions mt-24">
+          <button class="btn btn-ghost btn-sm flex-1" bindtap="onCloseDateModal">取消</button>
+          <button class="btn btn-primary btn-sm flex-1 ml-16" bindtap="onConfirmDateBlock">确认</button>
         </view>
       </view>
     </view>

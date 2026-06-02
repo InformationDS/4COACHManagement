@@ -40,6 +40,7 @@ page {
 /* ===== 通用布局 ===== */
 .container {
   padding: 24rpx;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 160rpx);
   min-height: 100vh;
   box-sizing: border-box;
 }

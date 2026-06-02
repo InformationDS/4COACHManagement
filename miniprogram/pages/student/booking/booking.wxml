@@ -58,6 +58,4 @@
       {{remaining <= 0 ? '课时不足，无法约课' : '确认约课'}}
     </button>
   </view>
-
-  <student-tabbar active="booking" />
 </view>

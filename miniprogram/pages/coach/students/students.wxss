@@ -127,7 +127,7 @@
 /* FAB 添加按钮 */
 .fab-wrapper {
   position: fixed;
-  bottom: 40rpx;
+  bottom: calc(env(safe-area-inset-bottom) + 140rpx);
   right: 40rpx;
   z-index: 100;
 }

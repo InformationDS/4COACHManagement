@@ -1,8 +1,7 @@
 {
   "usingComponents": {
     "calendar": "/components/calendar/calendar",
-    "time-grid": "/components/time-grid/time-grid",
-    "student-tabbar": "/components/student-tabbar/student-tabbar"
+    "time-grid": "/components/time-grid/time-grid"
   },
   "navigationBarTitleText": "约课"
 }

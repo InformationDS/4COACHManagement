@@ -1,1 +1,142 @@
-/* pages/coach/training-record.wxss */
+/* pages/coach/training-record/training-record.wxss */
+
+.compact-card {
+  padding: 20rpx 28rpx;
+}
+
+.info-row {
+  display: flex; align-items: center; padding: 8rpx 0;
+}
+
+.info-label {
+  width: 100rpx; font-size: 26rpx; color: #9ca3af;
+}
+
+.info-value {
+  font-size: 28rpx; color: #1a1a2e; font-weight: 500;
+}
+
+.info-tip {
+  font-size: 24rpx; color: #f59e0b; text-align: center;
+}
+
+/* ===== 录音按钮 ===== */
+.record-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20rpx 0 16rpx;
+}
+
+.record-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  background: #f0f4ff;
+  border: 3rpx solid #d0ddf8;
+  transition: all 0.2s;
+}
+
+.record-btn.active {
+  background: #ffe8e8;
+  border-color: #ff8888;
+  transform: scale(1.08);
+  box-shadow: 0 0 0 8rpx rgba(255,100,100,0.15);
+  animation: pulse-rec 1.2s ease-in-out infinite;
+}
+
+@keyframes pulse-rec {
+  0%, 100% { box-shadow: 0 0 0 8rpx rgba(255,100,100,0.15); }
+  50%      { box-shadow: 0 0 0 20rpx rgba(255,100,100,0.05); }
+}
+
+.record-icon {
+  font-size: 48rpx;
+}
+
+.record-label {
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  color: #6b7280;
+}
+
+.record-hint {
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  color: #b0b7c3;
+}
+
+.text-section {
+  margin-top: 8rpx;
+}
+
+/* ===== 降级提示 ===== */
+.degraded-tip {
+  padding: 20rpx 28rpx;
+  background: #fef3c7;
+  border: 2rpx solid #fde68a;
+  border-radius: 12rpx;
+  font-size: 26rpx;
+  color: #92400e;
+}
+
+/* ===== 部位标签 ===== */
+.tag-grid {
+  display: flex; flex-wrap: wrap; gap: 16rpx; padding: 8rpx 0;
+}
+
+.tag-select {
+  padding: 12rpx 28rpx; font-size: 26rpx; color: #6b7280;
+  background: #f3f4f6; border: 2rpx solid #e5e7eb; border-radius: 40rpx;
+}
+
+.tag-select.active {
+  color: #2d6ff7; background: #e8f0fe; border-color: #2d6ff7;
+}
+
+/* ===== 动作明细 ===== */
+.exercise-row {
+  padding: 20rpx 0; border-bottom: 2rpx solid #f3f4f6;
+}
+.exercise-row:last-child { border-bottom: none; }
+
+.ex-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 12rpx;
+}
+
+.ex-index { font-size: 26rpx; font-weight: 600; color: #2d6ff7; }
+
+.ex-remove {
+  width: 48rpx; height: 48rpx; display: flex; align-items: center;
+  justify-content: center; font-size: 32rpx; color: #ef4444;
+  background: #fef2f2; border-radius: 50%;
+}
+
+.ex-fields { display: flex; flex-direction: column; gap: 12rpx; }
+
+.ex-field { display: flex; flex-direction: column; }
+
+.field-label { font-size: 22rpx; color: #9ca3af; margin-bottom: 4rpx; }
+
+.ex-field-row { display: flex; gap: 16rpx; }
+
+.num-field { flex: 1; }
+.weight-field { flex: 1.5; }
+.name-field { flex: 1; }
+
+.num-field .form-input,
+.weight-field .form-input { height: 64rpx; padding: 0 16rpx; font-size: 26rpx; text-align: center; }
+
+.name-field .form-input { text-align: left; }
+
+/* ===== 保存 ===== */
+.save-bar { padding: 32rpx 0; }
+
+/* 工具类 */
+.flex-between { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.text-primary { color: #2d6ff7; }
+.text-danger { color: #ef4444; }
