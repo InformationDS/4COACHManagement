@@ -133,12 +133,45 @@ Write-Host "  提交成功" -ForegroundColor Green
 if (-not $NoPush -and $hasRemote) {
     $pushBranch = if ($Branch) { $Branch } else { $currentBranch }
     Write-Host "`n===== 推送到 origin/$pushBranch =====" -ForegroundColor Cyan
-    git push origin "${currentBranch}:${pushBranch}"
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "  推送失败！请检查网络或远程仓库权限。" -ForegroundColor Red
-        exit $LASTEXITCODE
+    
+    # 检查是否有存储的凭据
+    $credHelper = git config credential.helper 2>$null
+    
+    $pushOutput = git push origin "${currentBranch}:${pushBranch}" 2>&1
+    $pushExitCode = $LASTEXITCODE
+    
+    if ($pushExitCode -ne 0) {
+        $pushText = "$pushOutput"
+        if ($pushText -match "terminal prompts disabled|could not read Username|Authentication failed|403") {
+            Write-Host @"
+
+========================================
+  推送失败：需要 GitHub 认证
+========================================
+
+  请使用以下任一方式配置认证后重试：
+
+  方式1 - 使用 GitHub Personal Access Token（推荐）:
+    git remote set-url origin https://TOKEN@github.com/InformationDS/4COACHManagement.git
+    （将 TOKEN 替换为你的 GitHub Personal Access Token）
+
+  方式2 - 使用 SSH:
+    git remote set-url origin git@github.com:InformationDS/4COACHManagement.git
+
+  方式3 - 手动推送（在终端执行）:
+    git push origin $pushBranch
+    然后输入你的 GitHub 用户名和密码/Token
+
+  配置完成后运行: .\git-push.ps1 '$Message'
+"@ -ForegroundColor Yellow
+        } else {
+            Write-Host "  推送失败：$pushText" -ForegroundColor Red
+        }
+        # 不退出，保留本地提交
+        Write-Host "  本地提交已完成，推送可稍后重试。" -ForegroundColor Gray
+    } else {
+        Write-Host "  推送成功！" -ForegroundColor Green
     }
-    Write-Host "  推送成功！" -ForegroundColor Green
 } elseif (-not $hasRemote) {
     Write-Host "`n  未配置远程仓库，跳过推送。" -ForegroundColor Yellow
 } else {
