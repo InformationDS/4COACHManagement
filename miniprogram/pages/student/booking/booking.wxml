@@ -13,12 +13,10 @@
       <view class="tl-body">
         <view class="tl-row">
           <text class="tl-time">{{item.start_time}} - {{item.end_time}}</text>
-          <view class="tag tag-{{item.status}}">
-            <text wx:if="{{item.status==='pending'}}">待确认</text>
-            <text wx:elif="{{item.status==='confirmed'}}">已确认</text>
-            <text wx:elif="{{item.status==='completed'}}">已完成</text>
-            <text wx:elif="{{item.status==='cancelled'}}">已取消</text>
-          </view>
+          <t-tag wx:if="{{item.status==='pending'}}" theme="warning" variant="light" size="small">待确认</t-tag>
+          <t-tag wx:elif="{{item.status==='confirmed'}}" theme="primary" variant="light" size="small">已确认</t-tag>
+          <t-tag wx:elif="{{item.status==='completed'}}" theme="success" variant="light" size="small">已完成</t-tag>
+          <t-tag wx:elif="{{item.status==='cancelled'}}" theme="default" variant="light" size="small">已取消</t-tag>
         </view>
         <text class="tl-location" wx:if="{{item.location}}">📍 {{item.location}}</text>
       </view>
@@ -54,8 +52,8 @@
       <text class="summary-label">时间</text>
       <text class="summary-value">{{selectedTime}}</text>
     </view>
-    <button class="btn btn-primary btn-block mt-24" bindtap="onSubmit" loading="{{booking}}" disabled="{{booking || remaining <= 0}}">
+    <t-button theme="primary" size="large" block style="margin-top: var(--space-md)" loading="{{booking}}" disabled="{{booking || remaining <= 0}}" bind:tap="onSubmit">
       {{remaining <= 0 ? '课时不足，无法约课' : '确认约课'}}
-    </button>
+    </t-button>
   </view>
 </view>

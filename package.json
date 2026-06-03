@@ -1,0 +1,9 @@
+{
+  "name": "private-coach-assistant",
+  "version": "1.0.0",
+  "description": "自由私人教练助手 - 微信小程序",
+  "main": "miniprogram/app.js",
+  "dependencies": {
+    "tdesign-miniprogram": "^1.9.0"
+  }
+}

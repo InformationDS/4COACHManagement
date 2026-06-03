@@ -1,4 +1,8 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-dialog": "tdesign-miniprogram/dialog/dialog",
+    "t-switch": "tdesign-miniprogram/switch/switch"
+  },
   "navigationBarTitleText": "设置"
 }

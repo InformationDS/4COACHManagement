@@ -1,41 +1,40 @@
 <!-- pages/student/lesson-detail/lesson-detail.wxml -->
 <view class="container">
-  <view wx:if="{{loading}}" class="empty-state"><text class="empty-state-text">加载中...</text></view>
+  <view wx:if="{{loading}}" class="loading-wrap">
+    <t-loading theme="circular" size="48rpx" text="加载中..." />
+  </view>
 
   <block wx:if="{{!loading && lesson._id}}">
     <!-- 课程信息卡片 -->
-    <view class="card">
+    <view class="detail-card">
       <view class="detail-header">
-        <view class="tag tag-{{lesson.status}}">
-          <text wx:if="{{lesson.status==='pending'}}">待确认</text>
-          <text wx:elif="{{lesson.status==='confirmed'}}">已确认</text>
-          <text wx:elif="{{lesson.status==='completed'}}">已完成</text>
-          <text wx:elif="{{lesson.status==='cancelled'}}">已取消</text>
-        </view>
+        <t-tag wx:if="{{lesson.status==='pending'}}" theme="warning" variant="light" size="medium">待确认</t-tag>
+        <t-tag wx:elif="{{lesson.status==='confirmed'}}" theme="primary" variant="light" size="medium">已确认</t-tag>
+        <t-tag wx:elif="{{lesson.status==='completed'}}" theme="success" variant="light" size="medium">已完成</t-tag>
+        <t-tag wx:elif="{{lesson.status==='cancelled'}}" theme="default" variant="light" size="medium">已取消</t-tag>
       </view>
       <view class="detail-row"><text class="dl">日期</text><text class="dv">{{lesson.date}}</text></view>
       <view class="detail-row"><text class="dl">时间</text><text class="dv">{{lesson.start_time}} - {{lesson.end_time}}</text></view>
       <view class="detail-row"><text class="dl">地点</text><text class="dv">{{lesson.location || '未指定'}}</text></view>
-      <view class="detail-row"><text class="dl">教练</text><text class="dv">教练</text></view>
       <view wx:if="{{lesson.cancel_reason}}" class="detail-row"><text class="dl">取消原因</text><text class="dv text-muted">{{lesson.cancel_reason}}</text></view>
     </view>
 
     <!-- 操作按钮 -->
     <view class="action-bar" wx:if="{{lesson.status==='pending' || lesson.status==='confirmed'}}">
       <block wx:if="{{lesson.status==='pending' && lesson.initiated_by==='coach'}}">
-        <button class="btn btn-primary btn-block" bindtap="onConfirm">确认课程</button>
-        <button class="btn btn-outline btn-block mt-16" bindtap="onCancel">暂不参加</button>
+        <t-button theme="primary" size="large" block bind:tap="onConfirm">确认课程</t-button>
+        <t-button theme="default" variant="outline" size="large" block style="margin-top: var(--space-sm)" bind:tap="onCancel">暂不参加</t-button>
       </block>
       <block wx:elif="{{lesson.status==='pending' && lesson.initiated_by==='student'}}">
-        <button class="btn btn-outline btn-block" bindtap="onCancel">取消约课</button>
+        <t-button theme="default" variant="outline" size="large" block bind:tap="onCancel">取消约课</t-button>
       </block>
       <block wx:elif="{{lesson.status==='confirmed'}}">
-        <button class="btn btn-outline btn-block" bindtap="onCancel">取消课程</button>
+        <t-button theme="default" variant="outline" size="large" block bind:tap="onCancel">取消课程</t-button>
       </block>
     </view>
 
     <!-- 训练记录 -->
-    <view class="card mt-24" wx:if="{{lesson.status==='completed'}}">
+    <view class="detail-card mt-24" wx:if="{{lesson.status==='completed'}}">
       <view class="card-header">训练记录</view>
       <block wx:if="{{trainingRecord}}">
         <view class="train-section" wx:if="{{trainingRecord.body_parts.length > 0}}">
@@ -61,30 +60,25 @@
   </block>
 
   <!-- ===== 取消课程弹窗 ===== -->
-  <view class="modal-wrapper" wx:if="{{showCancelModal}}" catchtouchmove="noop">
-    <view class="modal-mask"></view>
-    <view class="modal-center" style="width: 560rpx;">
-      <view class="modal-content">
-        <view class="modal-header">
-          <text class="modal-title">取消课程</text>
-          <view class="modal-close" bindtap="onCloseCancelModal">✕</view>
-        </view>
-        <view class="form-group mt-16">
-          <text class="form-label">取消原因（选填）</text>
-          <textarea
-            class="form-textarea"
-            placeholder="请输入取消原因（如：临时有事、身体不适...）"
-            value="{{cancelReason}}"
-            bindinput="onCancelReasonInput"
-            maxlength="100"
-            auto-height
-          ></textarea>
-        </view>
-        <view class="modal-actions mt-24">
-          <button class="btn btn-ghost btn-sm flex-1" bindtap="onCloseCancelModal">返回</button>
-          <button class="btn btn-danger btn-sm flex-1 ml-16" bindtap="onConfirmCancel">确认取消</button>
-        </view>
-      </view>
+  <t-dialog
+    visible="{{showCancelModal}}"
+    title="取消课程"
+    confirm-btn="确认取消"
+    cancel-btn="返回"
+    bind:confirm="onConfirmCancel"
+    bind:cancel="onCloseCancelModal"
+    bind:close="onCloseCancelModal"
+  >
+    <view class="cancel-dialog-body" slot="content">
+      <text class="form-label">取消原因（选填）</text>
+      <textarea
+        class="form-textarea"
+        placeholder="请输入取消原因（如：临时有事、身体不适...）"
+        value="{{cancelReason}}"
+        bindinput="onCancelReasonInput"
+        maxlength="100"
+        auto-height
+      ></textarea>
     </view>
-  </view>
+  </t-dialog>
 </view>

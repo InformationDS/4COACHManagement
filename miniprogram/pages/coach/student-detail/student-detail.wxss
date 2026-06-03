@@ -1,23 +1,31 @@
-/* pages/coach/student-detail/student-detail.wxss */
+/* pages/coach/student-detail/student-detail.wxss — FORGE 主题 */
 
-/* 头像区域 */
+/* ===== 加载 ===== */
+.loading-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 200rpx 0;
+}
+
+/* ===== 头像区域 ===== */
 .avatar-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40rpx 0 24rpx;
+  padding: 40rpx 0 var(--space-md);
 }
 
 .avatar-box {
   width: 140rpx;
   height: 140rpx;
   border-radius: 50%;
-  background: var(--color-bg);
+  background: var(--color-bg-active);
   overflow: hidden;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: var(--td-shadow-1);
 }
 
 .avatar-box image {
@@ -27,6 +35,7 @@
 
 .avatar-box-placeholder {
   font-size: 56rpx;
+  opacity: 0.5;
 }
 
 .avatar-camera {
@@ -35,7 +44,7 @@
   left: 0;
   right: 0;
   height: 44rpx;
-  background: rgba(0,0,0,0.35);
+  background: rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -43,15 +52,15 @@
 }
 
 .avatar-hint {
-  font-size: var(--font-xs);
-  color: var(--color-text-light);
-  margin-top: 16rpx;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--space-sm);
 }
 
-/* 性别选择 */
+/* ===== 性别选择 ===== */
 .radio-group {
   display: flex;
-  gap: 16rpx;
+  gap: var(--space-sm);
 }
 
 .radio-item {
@@ -60,58 +69,54 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-bg);
-  border-radius: var(--radius-sm);
-  font-size: var(--font-sm);
+  background: var(--color-bg-active);
+  border-radius: var(--td-radius-small);
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
   border: 2rpx solid transparent;
   transition: all 0.2s;
 }
 
 .radio-item.active {
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-  border-color: var(--color-primary);
+  background: var(--color-brand-light);
+  color: var(--color-brand);
+  border-color: var(--color-brand);
   font-weight: 500;
 }
 
-/* 表单行 */
+/* ===== 表单行 ===== */
 .form-row {
   display: flex;
-  gap: 16rpx;
+  gap: var(--space-sm);
 }
 
-/* 课时概览 */
+/* ===== 课时概览 ===== */
 .lessons-overview {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 32rpx 0;
-  background: var(--color-primary-light);
-  border-radius: var(--radius-md);
-  margin-bottom: 24rpx;
+  padding: var(--space-lg) 0;
+  background: var(--color-brand-light);
+  border-radius: var(--td-radius-default);
+  margin-bottom: var(--space-md);
 }
 
-.lessons-big {
-  font-size: 72rpx;
-  font-weight: 700;
-  color: var(--color-primary);
-  line-height: 1;
-}
-
-.lessons-unit {
-  font-size: var(--font-sm);
-  color: var(--color-primary);
-  margin-top: 8rpx;
+.lessons-overview-sm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--space-md) 0;
+  margin-bottom: var(--space-lg);
 }
 
 .lessons-actions {
   display: flex;
+  gap: var(--space-sm);
 }
 
-/* 课时变动记录 */
+/* ===== 课时变动记录 ===== */
 .section-title {
-  font-size: var(--font-sm);
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--color-text);
   margin-bottom: 12rpx;
@@ -132,25 +137,28 @@
 .log-info {
   display: flex;
   flex-direction: column;
+  flex: 1;
 }
 
 .log-reason {
-  font-size: var(--font-sm);
+  font-size: var(--text-sm);
   color: var(--color-text);
 }
 
 .log-time {
-  font-size: var(--font-xs);
-  color: var(--color-text-light);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
   margin-top: 4rpx;
 }
 
 .log-amount {
-  font-size: var(--font-lg);
+  font-size: var(--text-lg);
   font-weight: 600;
+  flex-shrink: 0;
+  margin-left: var(--space-md);
 }
 
-/* 近期课程列表 */
+/* ===== 近期课程列表 ===== */
 .mini-lesson-item {
   display: flex;
   align-items: center;
@@ -170,19 +178,19 @@
 }
 
 .ml-date {
-  font-size: var(--font-sm);
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--color-text);
 }
 
 .ml-time {
-  font-size: var(--font-xs);
+  font-size: var(--text-xs);
   color: var(--color-text-secondary);
 }
 
 .ml-location {
   font-size: 22rpx;
-  color: var(--color-text-light);
+  color: var(--color-text-muted);
   margin-top: 2rpx;
 }
 
@@ -190,63 +198,12 @@
   flex-shrink: 0;
 }
 
-/* 弹窗 */
-.modal-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
+/* ===== Dialog 内容 ===== */
+.dialog-body {
+  padding: var(--space-xs) 0;
 }
 
-.modal-mask {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.5);
-}
-
-.modal-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 600rpx;
-  z-index: 1;
-}
-
-.modal-content {
-  background: #fff;
-  border-radius: var(--radius-lg);
-  padding: 40rpx 32rpx;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8rpx;
-}
-
-.modal-title {
-  font-size: var(--font-lg);
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.modal-close {
-  width: 48rpx;
-  height: 48rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32rpx;
-  color: var(--color-text-light);
-}
-
-.modal-actions {
-  display: flex;
+/* ===== 通用间距 ===== */
+.py-24 {
+  padding: var(--space-md) 0;
 }

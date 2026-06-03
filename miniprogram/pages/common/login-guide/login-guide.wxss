@@ -1,9 +1,9 @@
-/* pages/common/login-guide/login-guide.wxss */
+/* pages/common/login-guide/login-guide.wxss — FORGE 主题 */
 
 .guide-container {
   min-height: 100vh;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 40%, var(--color-bg) 40%);
-  padding: 60rpx 32rpx calc(env(safe-area-inset-bottom) + 120rpx);
+  background: linear-gradient(180deg, #1A1A2E 0%, #2D1A2E 30%, var(--color-bg) 30%);
+  padding: 60rpx var(--space-lg) calc(env(safe-area-inset-bottom) + 120rpx);
 }
 
 .guide-brand {
@@ -21,7 +21,7 @@
 .guide-title {
   font-size: 48rpx;
   font-weight: 700;
-  color: #ffffff;
+  color: #FFFFFF;
   letter-spacing: 8rpx;
 }
 
@@ -33,35 +33,36 @@
 
 .guide-section {
   background: var(--color-bg-white);
-  border-radius: var(--radius-lg);
-  padding: 32rpx;
-  margin-bottom: 24rpx;
+  border-radius: var(--td-radius-large);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-md);
+  box-shadow: var(--td-shadow-1);
 }
 
 .guide-section-title {
-  font-size: var(--font-lg);
+  font-size: var(--text-lg);
   font-weight: 600;
   color: var(--color-text);
-  margin-bottom: 16rpx;
-  padding-bottom: 16rpx;
+  margin-bottom: var(--space-sm);
+  padding-bottom: var(--space-sm);
   border-bottom: 1rpx solid var(--color-divider);
 }
 
 .guide-text {
-  font-size: var(--font-sm);
+  font-size: var(--text-sm);
   color: var(--color-text-secondary);
   line-height: 1.8;
 }
 
 .guide-tip {
-  background: var(--color-primary-light);
-  border-radius: var(--radius-sm);
-  padding: 16rpx 24rpx;
+  background: var(--color-brand-light);
+  border-radius: var(--td-radius-small);
+  padding: var(--space-sm) var(--space-md);
 }
 
 .guide-tip-text {
-  font-size: var(--font-xs);
-  color: var(--color-primary);
+  font-size: var(--text-xs);
+  color: var(--color-brand);
 }
 
 .guide-footer {

@@ -10,7 +10,7 @@
 
     <!-- 加载状态 -->
     <view class="splash-status" wx:if="{{loading}}">
-      <view class="loading-spinner"></view>
+      <t-loading theme="circular" size="60rpx" />
       <text class="loading-text">正在加载...</text>
     </view>
 

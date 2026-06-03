@@ -1,4 +1,6 @@
 {
-  "usingComponents": {},
+  "usingComponents": {
+    "t-loading": "tdesign-miniprogram/loading/loading"
+  },
   "navigationStyle": "custom"
 }

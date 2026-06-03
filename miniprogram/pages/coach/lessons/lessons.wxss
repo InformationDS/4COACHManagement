@@ -1,20 +1,175 @@
-.section-header { display: flex; justify-content: space-between; align-items: center; padding: 16rpx 0; }
-.section-title { font-size: var(--font-md); font-weight: 600; }
-.section-count { font-size: var(--font-xs); color: var(--color-text-light); }
-.picker-display { display: flex; align-items: center; color: var(--color-text); }
-.detail-row { display: flex; justify-content: space-between; align-items: center; padding: 20rpx 0; border-bottom: 1rpx solid var(--color-divider); }
-.detail-label { font-size: var(--font-sm); color: var(--color-text-secondary); }
-.detail-value { font-size: var(--font-sm); color: var(--color-text); font-weight: 500; }
-.detail-actions { display: flex; }
-.modal-wrapper { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; }
-.modal-mask { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); }
-.modal-center { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); z-index: 1; max-height: 85vh; overflow-y: auto; }
-.modal-content { background: #fff; border-radius: var(--radius-lg); padding: 40rpx 32rpx; }
-.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8rpx; }
-.modal-title { font-size: var(--font-lg); font-weight: 600; }
-.modal-close { width: 48rpx; height: 48rpx; display: flex; align-items: center; justify-content: center; font-size: 32rpx; color: var(--color-text-light); }
-.modal-actions { display: flex; }
-.fab-wrapper { position: fixed; bottom: calc(env(safe-area-inset-bottom) + 140rpx); right: 40rpx; z-index: 100; }
-.fab { width: 112rpx; height: 112rpx; border-radius: 50%; background: var(--color-primary); box-shadow: 0 8rpx 24rpx rgba(45,111,247,0.4); display: flex; align-items: center; justify-content: center; border: none; padding: 0; margin: 0; }
-.fab::after { border: none; }
-.fab-icon { font-size: 48rpx; color: #fff; font-weight: 300; line-height: 1; }
+/* pages/coach/lessons/lessons.wxss — FORGE 主题 */
+
+/* ===== 区域标题 ===== */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-sm) 0;
+}
+
+.section-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.section-count {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+/* ===== 排课弹窗 ===== */
+.modal-wrapper {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+}
+
+.modal-mask {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.modal-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  width: 640rpx;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.modal-content {
+  background: var(--color-bg-white);
+  border-radius: var(--td-radius-large);
+  padding: 40rpx var(--space-lg);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xs);
+}
+
+.modal-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.modal-close {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  color: var(--color-text-muted);
+}
+
+.modal-actions {
+  display: flex;
+}
+
+.picker-display {
+  display: flex;
+  align-items: center;
+  color: var(--color-text);
+}
+
+/* ===== 课程详情 Popup ===== */
+.detail-popup {
+  padding: var(--space-lg) var(--space-md);
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--space-xl));
+}
+
+.detail-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: var(--space-md);
+  margin-bottom: var(--space-md);
+  border-bottom: 1rpx solid var(--color-divider);
+}
+
+.detail-popup-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid var(--color-divider);
+}
+
+.detail-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.detail-value {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.detail-actions {
+  display: flex;
+  margin-top: var(--space-lg);
+  gap: var(--space-sm);
+}
+
+/* ===== 取消原因弹窗 ===== */
+.cancel-dialog-body {
+  padding: var(--space-sm) 0;
+}
+
+/* ===== 自定义 FAB ===== */
+.fab {
+  position: fixed;
+  right: 32rpx;
+  bottom: 180rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 56rpx;
+  background: var(--color-brand);
+  box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.35);
+  z-index: 100;
+  transition: transform 0.15s ease-out;
+}
+
+.fab:active {
+  transform: scale(0.93);
+}
+
+.fab-icon {
+  font-size: 44rpx;
+  font-weight: 300;
+  color: #fff;
+  line-height: 1;
+}
+
+.fab-text {
+  font-size: 18rpx;
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 2rpx;
+}

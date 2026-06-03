@@ -2,7 +2,12 @@
   "usingComponents": {
     "calendar": "/components/calendar/calendar",
     "time-grid": "/components/time-grid/time-grid",
-    "lesson-card": "/components/lesson-card/lesson-card"
+    "lesson-card": "/components/lesson-card/lesson-card",
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-tag": "tdesign-miniprogram/tag/tag",
+    "t-dialog": "tdesign-miniprogram/dialog/dialog",
+    "t-popup": "tdesign-miniprogram/popup/popup",
+    "t-icon": "tdesign-miniprogram/icon/icon"
   },
   "navigationBarTitleText": "课程"
 }

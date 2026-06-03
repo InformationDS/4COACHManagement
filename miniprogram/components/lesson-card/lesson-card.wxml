@@ -4,15 +4,25 @@
     <view class="lc-time">
       <text class="lc-time-text">{{lesson.start_time}} - {{lesson.end_time}}</text>
     </view>
-    <text class="lc-location" wx:if="{{lesson.location}}">📍 {{lesson.location}}</text>
+    <text class="lc-location" wx:if="{{lesson.location}}">{{lesson.location}}</text>
   </view>
   <view class="lc-right">
     <text class="lc-student">{{lesson.student_name}}</text>
-    <view class="tag tag-{{lesson.status}}">
-      <text wx:if="{{lesson.status === 'pending'}}">待确认</text>
-      <text wx:elif="{{lesson.status === 'confirmed'}}">已确认</text>
-      <text wx:elif="{{lesson.status === 'completed'}}">已完成</text>
-      <text wx:elif="{{lesson.status === 'cancelled'}}">已取消</text>
-    </view>
+    <t-tag
+      wx:if="{{lesson.status === 'pending'}}"
+      theme="warning" variant="light" size="small"
+    >待确认</t-tag>
+    <t-tag
+      wx:elif="{{lesson.status === 'confirmed'}}"
+      theme="primary" variant="light" size="small"
+    >已确认</t-tag>
+    <t-tag
+      wx:elif="{{lesson.status === 'completed'}}"
+      theme="success" variant="light" size="small"
+    >已完成</t-tag>
+    <t-tag
+      wx:elif="{{lesson.status === 'cancelled'}}"
+      theme="default" variant="light" size="small"
+    >已取消</t-tag>
   </view>
 </view>

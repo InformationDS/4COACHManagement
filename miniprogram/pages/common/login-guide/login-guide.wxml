@@ -14,9 +14,9 @@
         <view class="guide-section-title">欢迎，{{studentName || '学员'}}</view>
         <view class="guide-section-body">
           <text class="guide-text">您的教练已为您创建了账号，点击下方按钮绑定身份即可开始使用。</text>
-          <button class="btn btn-primary btn-block mt-24" bindtap="onBindStudent" loading="{{binding}}">
+          <t-button theme="primary" size="large" block style="margin-top: var(--space-md)" loading="{{binding}}" bind:tap="onBindStudent">
             {{binding ? '绑定中...' : '绑定学员身份'}}
-          </button>
+          </t-button>
         </view>
       </view>
     </block>
@@ -28,9 +28,9 @@
         <view class="guide-section-title">我是教练</view>
         <view class="guide-section-body">
           <text class="guide-text">首次使用请绑定教练身份，然后即可管理学员和课程。</text>
-          <button class="btn btn-primary btn-block mt-24" bindtap="onBindCoach" loading="{{binding}}">
+          <t-button theme="primary" size="large" block style="margin-top: var(--space-md)" loading="{{binding}}" bind:tap="onBindCoach">
             {{binding ? '绑定中...' : '绑定教练身份'}}
-          </button>
+          </t-button>
         </view>
       </view>
 
@@ -40,7 +40,7 @@
         <view class="guide-section-body">
           <text class="guide-text">请联系您的教练，教练添加您的信息后，您即可登录使用。</text>
           <view class="guide-tip mt-16">
-            <text class="guide-tip-text">💡 提示：如果您已经收到教练的邀请，请点击教练发给您的链接进入。</text>
+            <text class="guide-tip-text">提示：如果您已经收到教练的邀请，请点击教练发给您的链接进入。</text>
           </view>
         </view>
       </view>
@@ -48,9 +48,9 @@
 
     <!-- 重新检测 -->
     <view class="guide-footer">
-      <button class="btn btn-ghost btn-block" bindtap="onRetry">
+      <t-button theme="default" variant="text" size="large" block bind:tap="onRetry">
         已有账号？重新检测
-      </button>
+      </t-button>
     </view>
   </view>
 </view>

@@ -186,6 +186,11 @@ Page({
   },
 
   onCloseDetail() { this.setData({ showDetailModal: false }); },
+  onDetailVisibleChange(e) {
+    if (!e.detail.visible) {
+      this.setData({ showDetailModal: false });
+    }
+  },
 
   // 确认课程
   async onConfirmLesson() {

@@ -14,8 +14,8 @@
   ],
   "tabBar": {
     "custom": true,
-    "color": "#9ca3af",
-    "selectedColor": "#2d6ff7",
+    "color": "#9CA3AF",
+    "selectedColor": "#FF6B35",
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [
@@ -47,12 +47,11 @@
   },
   "window": {
     "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#1a1a2e",
+    "navigationBarBackgroundColor": "#FF6B35",
     "navigationBarTitleText": "私教助手",
     "navigationBarTextStyle": "white",
-    "backgroundColor": "#f5f5f5"
+    "backgroundColor": "#F0F2F5"
   },
   "cloud": true,
-  "style": "v2",
   "sitemapLocation": "sitemap.json"
 }

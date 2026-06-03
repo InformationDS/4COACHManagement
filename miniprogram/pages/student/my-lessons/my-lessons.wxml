@@ -11,12 +11,10 @@
       <view class="lc-body">
         <view class="lc-top">
           <text class="lc-date">{{item.dateText}}</text>
-          <view class="tag tag-{{item.status}}">
-            <text wx:if="{{item.status==='pending'}}">待确认</text>
-            <text wx:elif="{{item.status==='confirmed'}}">已确认</text>
-            <text wx:elif="{{item.status==='completed'}}">已完成</text>
-            <text wx:elif="{{item.status==='cancelled'}}">已取消</text>
-          </view>
+          <t-tag wx:if="{{item.status==='pending'}}" theme="warning" variant="light" size="small">待确认</t-tag>
+          <t-tag wx:elif="{{item.status==='confirmed'}}" theme="primary" variant="light" size="small">已确认</t-tag>
+          <t-tag wx:elif="{{item.status==='completed'}}" theme="success" variant="light" size="small">已完成</t-tag>
+          <t-tag wx:elif="{{item.status==='cancelled'}}" theme="default" variant="light" size="small">已取消</t-tag>
         </view>
         <view class="lc-mid">
           <text class="lc-time">{{item.start_time}} - {{item.end_time}}</text>
@@ -25,8 +23,10 @@
       </view>
     </view>
   </view>
-  <view wx:else class="empty-state">
-    <text class="empty-state-icon">{{activeTab==='upcoming'?'📅':'📭'}}</text>
-    <text class="empty-state-text">{{activeTab==='upcoming'?'暂无待上课程':'暂无课程历史'}}</text>
+  <view wx:else class="empty-wrap">
+    <t-empty
+      icon="{{activeTab==='upcoming'?'calendar':'history'}}"
+      description="{{activeTab==='upcoming'?'暂无待上课程':'暂无课程历史'}}"
+    />
   </view>
 </view>

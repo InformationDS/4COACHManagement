@@ -1,8 +1,8 @@
 <!-- pages/coach/training-record/training-record.wxml -->
 <view class="container">
 
-  <view wx:if="{{loading}}" class="empty-state">
-    <text class="empty-state-text">加载中...</text>
+  <view wx:if="{{loading}}" class="loading-wrap">
+    <t-loading theme="circular" size="48rpx" text="加载中..." />
   </view>
 
   <block wx:if="{{!loading && lesson._id}}">
@@ -51,9 +51,7 @@
 
       <!-- AI 解析按钮 -->
       <view class="mt-16" wx:if="{{textInput}}">
-        <button class="btn btn-primary btn-sm btn-block" bindtap="onParseWithAI" loading="{{parsing}}">
-          🤖 AI 智能解析
-        </button>
+        <t-button theme="primary" size="medium" block bind:tap="onParseWithAI" loading="{{parsing}}">AI 智能解析</t-button>
         <view wx:if="{{parseError}}" class="text-sm text-danger mt-8">{{parseError}}</view>
       </view>
     </view>
@@ -132,9 +130,9 @@
 
       <!-- 保存按钮 -->
       <view class="save-bar safe-bottom">
-        <button class="btn btn-primary btn-block" bindtap="onSave" loading="{{saving}}">
+        <t-button theme="primary" size="large" block loading="{{saving}}" bind:tap="onSave">
           {{existingRecord ? '更新训练记录' : '保存训练记录'}}
-        </button>
+        </t-button>
       </view>
     </block>
 

@@ -44,12 +44,26 @@ Page({
   onSearchInput(e) {
     const keyword = e.detail.value;
     this.setData({ keyword });
-    // 清除之前的定时器
     if (this.data.searchTimer) clearTimeout(this.data.searchTimer);
-    // 300ms 防抖
     this.data.searchTimer = setTimeout(() => {
       this.loadStudents();
     }, 300);
+  },
+
+  /**
+   * TDesign Search 组件 change 事件
+   */
+  onSearchChange(e) {
+    this.onSearchInput(e);
+  },
+
+  /**
+   * TDesign Search 组件 submit 事件
+   */
+  onSearchSubmit(e) {
+    const keyword = e.detail.value;
+    this.setData({ keyword });
+    this.loadStudents();
   },
 
   /**
