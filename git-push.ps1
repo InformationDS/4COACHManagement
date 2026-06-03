@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     自动化 git 提交并推送到 GitHub
 .DESCRIPTION
