@@ -144,6 +144,7 @@ async function getLessons(filters = {}) {
 
   const res = await query.orderBy('date', 'asc')
     .orderBy('start_time', 'asc')
+    .limit(100) // 云数据库默认只返回 20 条，显式设为 100
     .get();
   return res.data;
 }
@@ -181,6 +182,39 @@ async function updateLesson(lessonId, data) {
   return db.collection('lessons').doc(lessonId).update({
     data: { ...data, updated_at: new Date() }
   });
+}
+
+/**
+ * 获取某个学员的所有课程（教练端查看学员课程历史）
+ * 复用 getLessons 已验证的查询路径 + 前端过滤
+ * @param {string} studentId - 学员 _id
+ * @param {number} limit - 默认 50 条
+ */
+async function getStudentLessons(studentId, limit = 50) {
+  // 复用 getLessons（教练端路径 = where coach_openid + orderBy date asc + start_time asc）
+  const allLessons = await getLessons();
+
+  console.log('[DEBUG] getStudentLessons: allLessons总条数=', allLessons.length);
+  console.log('[DEBUG] getStudentLessons: 目标studentId=', studentId);
+  if (allLessons.length > 0) {
+    console.log('[DEBUG] getStudentLessons: 首条lesson.student_id=', allLessons[0].student_id);
+    // 打印所有不同的 student_id
+    const ids = [...new Set(allLessons.map(l => l.student_id))];
+    console.log('[DEBUG] getStudentLessons: 所有student_id=', ids);
+  }
+
+  // 前端过滤 + 日期倒序 + 截取
+  return allLessons
+    .filter(l => l.student_id === studentId)
+    .sort((a, b) => {
+      // 日期倒序
+      const da = typeof a.date === 'string' ? a.date : '';
+      const db2 = typeof b.date === 'string' ? b.date : '';
+      if (da !== db2) return db2.localeCompare(da);
+      // 同日按时间倒序
+      return (b.start_time || '').localeCompare(a.start_time || '');
+    })
+    .slice(0, limit);
 }
 
 // ===== training_records 表操作 =====
@@ -358,6 +392,7 @@ module.exports = {
   getLessonDetail,
   createLesson,
   updateLesson,
+  getStudentLessons,
   getTrainingRecord,
   saveTrainingRecord,
   getLessonCardLogs,

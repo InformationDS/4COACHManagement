@@ -61,36 +61,62 @@
       </view>
     </view>
 
-    <!-- ===== 课时卡管理（仅编辑模式） ===== -->
+    <!-- ===== 近期课程（仅编辑模式） ===== -->
+    <view class="card" wx:if="{{isEdit}}">
+      <view class="card-header flex-between">
+        <text>近期课程</text>
+        <text wx:if="{{recentLessons.length > 5}}" class="text-sm text-primary" bindtap="onToggleAllLessons">
+          {{showAllLessons ? '收起' : '查看全部'}}
+        </text>
+      </view>
+
+      <view wx:if="{{recentLessons.length > 0}}">
+        <view
+          wx:for="{{displayLessons}}"
+          wx:key="_id"
+          class="mini-lesson-item"
+          data-id="{{item._id}}"
+          data-status="{{item.status}}"
+          bindtap="onLessonTap"
+        >
+          <view class="ml-left">
+            <text class="ml-date">{{item._dateShort}}</text>
+            <text class="ml-time">{{item.start_time}}-{{item.end_time}}</text>
+            <text wx:if="{{item.location}}" class="ml-location">{{item.location}}</text>
+          </view>
+          <view class="ml-right">
+            <view class="tag tag-{{item.status}}">
+              <text wx:if="{{item.status==='pending'}}">待确认</text>
+              <text wx:elif="{{item.status==='confirmed'}}">已确认</text>
+              <text wx:elif="{{item.status==='completed'}}">已完成</text>
+              <text wx:elif="{{item.status==='cancelled'}}">已取消</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:else class="text-muted text-sm text-center py-24">
+        暂无课程记录
+      </view>
+    </view>
+
+    <!-- ===== 课时卡（仅编辑模式） ===== -->
     <view class="card" wx:if="{{isEdit}}">
       <view class="card-header">课时卡</view>
 
-      <!-- 课时概览 -->
       <view class="lessons-overview">
         <view class="lessons-big">{{student.remaining_lessons || 0}}</view>
         <view class="lessons-unit">剩余课时</view>
       </view>
 
-      <!-- 充值/扣减按钮 -->
       <view class="lessons-actions">
         <button class="btn btn-primary btn-sm" bindtap="onRecharge">充值课时</button>
         <button class="btn btn-outline btn-sm ml-16" bindtap="onDeduct">手动扣减</button>
       </view>
 
-      <!-- 课时变动记录 -->
-      <view class="section-title mt-24">变动记录</view>
-      <view wx:if="{{lessonLogs.length > 0}}">
-        <view class="log-item" wx:for="{{lessonLogs}}" wx:key="_id">
-          <view class="log-info">
-            <text class="log-reason">{{item.reason || '无备注'}}</text>
-            <text class="log-time">{{item.timeText}}</text>
-          </view>
-          <text class="log-amount {{item.change_amount > 0 ? 'text-success' : 'text-danger'}}">
-            {{item.change_amount > 0 ? '+' : ''}}{{item.change_amount}}
-          </text>
-        </view>
+      <view class="text-center mt-16">
+        <text class="text-sm text-primary" bindtap="onShowLessonCardDetail">查看课时记录 →</text>
       </view>
-      <view wx:else class="text-muted text-sm text-center mt-16">暂无变动记录</view>
     </view>
 
     <!-- ===== 保存按钮 ===== -->
@@ -119,6 +145,50 @@
         <view class="modal-actions mt-32">
           <button class="btn btn-ghost btn-sm flex-1" bindtap="onCloseRecharge">取消</button>
           <button class="btn btn-primary btn-sm flex-1 ml-16" bindtap="onConfirmRecharge" loading="{{recharging}}">确认</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- ===== 课时记录详情弹窗 ===== -->
+  <view class="modal-wrapper" wx:if="{{showLessonCardDetail}}" catchtouchmove="noop">
+    <view class="modal-mask" bindtap="onCloseLessonCardDetail"></view>
+    <view class="modal-center">
+      <view class="modal-content">
+        <view class="modal-header">
+          <text class="modal-title">课时详情</text>
+          <view class="modal-close" bindtap="onCloseLessonCardDetail">✕</view>
+        </view>
+
+        <!-- 课时概览 -->
+        <view class="lessons-overview">
+          <view class="lessons-big">{{student.remaining_lessons || 0}}</view>
+          <view class="lessons-unit">剩余课时</view>
+        </view>
+
+        <!-- 充值/扣减 -->
+        <view class="lessons-actions">
+          <button class="btn btn-primary btn-sm flex-1" bindtap="onRecharge">充值课时</button>
+          <button class="btn btn-outline btn-sm flex-1 ml-16" bindtap="onDeduct">手动扣减</button>
+        </view>
+
+        <!-- 变动记录 -->
+        <view class="section-title mt-24">变动记录</view>
+        <view wx:if="{{lessonLogs.length > 0}}">
+          <view class="log-item" wx:for="{{lessonLogs}}" wx:key="_id">
+            <view class="log-info">
+              <text class="log-reason">{{item.reason || '无备注'}}</text>
+              <text class="log-time">{{item.timeText}}</text>
+            </view>
+            <text class="log-amount {{item.change_amount > 0 ? 'text-success' : 'text-danger'}}">
+              {{item.change_amount > 0 ? '+' : ''}}{{item.change_amount}}
+            </text>
+          </view>
+        </view>
+        <view wx:else class="text-muted text-sm text-center py-24">暂无变动记录</view>
+
+        <view class="mt-32">
+          <button class="btn btn-ghost btn-block btn-sm" bindtap="onCloseLessonCardDetail">关闭</button>
         </view>
       </view>
     </view>

@@ -150,6 +150,46 @@
   font-weight: 600;
 }
 
+/* 近期课程列表 */
+.mini-lesson-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid var(--color-divider);
+}
+
+.mini-lesson-item:last-child {
+  border-bottom: none;
+}
+
+.ml-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2rpx;
+}
+
+.ml-date {
+  font-size: var(--font-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.ml-time {
+  font-size: var(--font-xs);
+  color: var(--color-text-secondary);
+}
+
+.ml-location {
+  font-size: 22rpx;
+  color: var(--color-text-light);
+  margin-top: 2rpx;
+}
+
+.ml-right {
+  flex-shrink: 0;
+}
+
 /* 弹窗 */
 .modal-wrapper {
   position: fixed;

@@ -27,6 +27,7 @@ Page({
 
     // 结构化数据
     bodyParts: [],
+    bodyPartsMap: {},      // {'胸部':true, '背部':false,...} 给WXML做类名绑定
     allBodyParts: BODY_PARTS,
     exercises: [],
     notes: '',
@@ -52,6 +53,13 @@ Page({
     this._clearTimer();
   },
 
+  /** 从部位数组重建选中映射 */
+  _buildMap(parts) {
+    const map = {};
+    (parts || []).forEach(p => { map[p] = true; });
+    return map;
+  },
+
   async loadData(lessonId) {
     this.setData({ loading: true });
     try {
@@ -63,6 +71,7 @@ Page({
         this.setData({
           lesson, existingRecord,
           bodyParts: existingRecord.body_parts || [],
+          bodyPartsMap: this._buildMap(existingRecord.body_parts),
           exercises: existingRecord.exercises || [],
           notes: existingRecord.notes || '',
           rawText: existingRecord.raw_voice_text || '',
@@ -170,6 +179,7 @@ Page({
           parseResult: result.data,
           degraded: result.degraded || false,
           bodyParts: result.data.body_parts || [],
+          bodyPartsMap: this._buildMap(result.data.body_parts),
           exercises: result.data.exercises && result.data.exercises.length > 0
             ? result.data.exercises
             : [{ name: '', sets: 0, reps: 0, weight: '' }],
@@ -184,14 +194,30 @@ Page({
       }
     } catch (err) {
       console.error('AI 解析失败:', err);
+      // 判断是否为超时错误
+      const isTimeout = err.message && err.message.includes('timed out');
+      const errorMsg = isTimeout
+        ? 'AI 解析超时（云函数默认 3s 不够），请将超时改为 30 秒后重试'
+        : (err.message || '解析失败');
+
       this.setData({
-        parseError: err.message || '解析失败',
+        parseError: errorMsg,
         degraded: true,
         bodyParts: [],
+        bodyPartsMap: {},
         exercises: [{ name: '', sets: 0, reps: 0, weight: '' }],
         notes: text
       });
-      wx.showToast({ title: '解析失败，请手动填写', icon: 'none' });
+
+      if (isTimeout) {
+        wx.showModal({
+          title: '超时提示',
+          content: '云函数默认超时仅 3 秒，调用 AI 需要更长时间。请在云开发控制台将 parseTrainingRecord 的超时改为 20-30 秒，然后重试。',
+          showCancel: false
+        });
+      } else {
+        wx.showToast({ title: '解析失败，请手动填写', icon: 'none' });
+      }
     }
     this.setData({ parsing: false });
   },
@@ -202,7 +228,7 @@ Page({
     let parts = [...this.data.bodyParts];
     const idx = parts.indexOf(part);
     idx > -1 ? parts.splice(idx, 1) : parts.push(part);
-    this.setData({ bodyParts: parts });
+    this.setData({ bodyParts: parts, bodyPartsMap: this._buildMap(parts) });
   },
 
   // ===== 动作明细 =====

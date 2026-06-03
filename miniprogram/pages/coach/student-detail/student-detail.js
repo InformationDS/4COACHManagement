@@ -1,7 +1,7 @@
 // pages/coach/student-detail/student-detail.js
 const {
   getStudentDetail, addStudent, updateStudent, getLessonCardLogs,
-  addLessonCardLog, uploadImage
+  addLessonCardLog, uploadImage, getStudentLessons
 } = require('../../../utils/api');
 const { formatDateTime } = require('../../../utils/date');
 
@@ -30,6 +30,14 @@ Page({
     // 课时变动记录
     lessonLogs: [],
 
+    // 课程历史
+    recentLessons: [],     // 所有课程
+    displayLessons: [],    // 展示用（前5条或全部）
+    showAllLessons: false, // 是否展开全部课程
+
+    // 课时卡详情弹窗
+    showLessonCardDetail: false,
+
     // 充值弹窗
     rechargeVisible: false,
     rechargeAmount: '',
@@ -53,10 +61,33 @@ Page({
   async loadData(id) {
     this.setData({ loading: true });
     try {
-      const [student, logs] = await Promise.all([
+      const [student, logs, lessons] = await Promise.all([
         getStudentDetail(id),
-        getLessonCardLogs(id)
+        getLessonCardLogs(id),
+        getStudentLessons(id, 50)
       ]);
+
+      // DEBUG: 诊断近期课程为空问题
+      console.log('[DEBUG] studentId传入:', id);
+      console.log('[DEBUG] student._id:', student._id);
+      console.log('[DEBUG] lessons返回条数:', lessons.length);
+      if (lessons.length > 0) {
+        console.log('[DEBUG] 首条lesson.student_id:', lessons[0].student_id);
+      }
+
+      // 格式化日期显示
+      const fmtDate = (d) => {
+        if (!d) return '';
+        const s = typeof d === 'string' ? d : d.toString();
+        return s.length === 10 ? s.slice(5) : s.slice(0, 10); // "06-03"
+      };
+
+      const recentLessons = lessons.map(l => ({ ...l, _dateShort: fmtDate(l.date) }));
+
+      // DEBUG: setData 前检查
+      console.log('[DEBUG] recentLessons 映射后条数:', recentLessons.length);
+      console.log('[DEBUG] recentLessons[0]._dateShort:', recentLessons[0] ? recentLessons[0]._dateShort : 'N/A');
+      console.log('[DEBUG] isEdit:', this.data.isEdit);
 
       this.setData({
         student,
@@ -74,8 +105,15 @@ Page({
           ...log,
           timeText: log.created_at ? formatDateTime(log.created_at) : ''
         })),
+        recentLessons,
+        displayLessons: recentLessons.slice(0, 5),
+        showAllLessons: false,
         loading: false
       });
+
+      // DEBUG: setData 后检查
+      console.log('[DEBUG] setData后 recentLessons.length:', this.data.recentLessons.length);
+      console.log('[DEBUG] setData后 displayLessons.length:', this.data.displayLessons.length);
     } catch (err) {
       console.error('加载学员数据失败:', err);
       wx.showToast({ title: '加载失败', icon: 'none' });
@@ -259,5 +297,33 @@ Page({
       wx.showToast({ title: '操作失败，请重试', icon: 'none' });
       this.setData({ recharging: false });
     }
+  },
+
+  // ===== 课程历史 =====
+
+  onToggleAllLessons() {
+    const showAll = !this.data.showAllLessons;
+    this.setData({
+      showAllLessons: showAll,
+      displayLessons: showAll ? this.data.recentLessons : this.data.recentLessons.slice(0, 5)
+    });
+  },
+
+  onLessonTap(e) {
+    const { id, status } = e.currentTarget.dataset;
+    if (status === 'completed') {
+      wx.navigateTo({ url: `/pages/coach/training-record/training-record?lesson_id=${id}` });
+    }
+    // 其他状态暂不处理，后续可扩展
+  },
+
+  // ===== 课时卡详情弹窗 =====
+
+  onShowLessonCardDetail() {
+    this.setData({ showLessonCardDetail: true });
+  },
+
+  onCloseLessonCardDetail() {
+    this.setData({ showLessonCardDetail: false });
   }
 });

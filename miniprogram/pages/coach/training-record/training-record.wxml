@@ -73,7 +73,7 @@
           <view
             wx:for="{{allBodyParts}}"
             wx:key="*this"
-            class="tag-select {{bodyParts.indexOf(item) > -1 ? 'active' : ''}}"
+            class="tag-select {{bodyPartsMap[item] ? 'active' : ''}}"
             data-part="{{item}}"
             bindtap="onToggleBodyPart"
           >{{item}}</view>
