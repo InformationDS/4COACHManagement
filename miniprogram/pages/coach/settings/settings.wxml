@@ -74,23 +74,6 @@
     </view>
   </view>
 
-  <!-- 开发者调试 -->
-  <view class="card mt-24">
-    <view class="card-header">🔧 开发者调试</view>
-    <view class="debug-row">
-      <text class="debug-label">以学员身份预览</text>
-      <picker range="{{studentNames}}" value="{{debugStudentIdx}}" bindchange="onDebugStudentChange">
-        <view class="debug-picker">
-          {{studentNames[debugStudentIdx] || '选择学员'}}
-        </view>
-      </picker>
-    </view>
-    <t-button theme="default" variant="outline" size="medium" block style="margin-top: var(--space-sm)" disabled="{{!studentNames[debugStudentIdx]}}" bind:tap="onSwitchToStudent">
-      切换到学员端预览
-    </t-button>
-    <text class="debug-hint">开发者专用：切换后可体验学员端功能，重新打开小程序恢复教练身份</text>
-  </view>
-
   <!-- 保存按钮 -->
   <view class="safe-bottom" style="padding: var(--space-lg) 0 0;">
     <t-button theme="primary" size="large" block loading="{{saving}}" bind:tap="onSave">保存设置</t-button>

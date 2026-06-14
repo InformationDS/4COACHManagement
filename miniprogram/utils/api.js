@@ -166,7 +166,7 @@ async function createLesson(data) {
   return db.collection('lessons').add({
     data: {
       ...data,
-      status: 'pending',
+      status: data.status || 'pending',
       created_at: new Date(),
       updated_at: new Date()
     }
@@ -191,30 +191,17 @@ async function updateLesson(lessonId, data) {
  * @param {number} limit - 默认 50 条
  */
 async function getStudentLessons(studentId, limit = 50) {
-  // 复用 getLessons（教练端路径 = where coach_openid + orderBy date asc + start_time asc）
-  const allLessons = await getLessons();
-
-  console.log('[DEBUG] getStudentLessons: allLessons总条数=', allLessons.length);
-  console.log('[DEBUG] getStudentLessons: 目标studentId=', studentId);
-  if (allLessons.length > 0) {
-    console.log('[DEBUG] getStudentLessons: 首条lesson.student_id=', allLessons[0].student_id);
-    // 打印所有不同的 student_id
-    const ids = [...new Set(allLessons.map(l => l.student_id))];
-    console.log('[DEBUG] getStudentLessons: 所有student_id=', ids);
-  }
-
-  // 前端过滤 + 日期倒序 + 截取
-  return allLessons
-    .filter(l => l.student_id === studentId)
-    .sort((a, b) => {
-      // 日期倒序
-      const da = typeof a.date === 'string' ? a.date : '';
-      const db2 = typeof b.date === 'string' ? b.date : '';
-      if (da !== db2) return db2.localeCompare(da);
-      // 同日按时间倒序
-      return (b.start_time || '').localeCompare(a.start_time || '');
+  const app = getApp();
+  const res = await db.collection('lessons')
+    .where({
+      coach_openid: app.globalData.openid,
+      student_id: studentId
     })
-    .slice(0, limit);
+    .orderBy('date', 'desc')
+    .orderBy('start_time', 'desc')
+    .limit(limit)
+    .get();
+  return res.data;
 }
 
 // ===== training_records 表操作 =====
@@ -236,13 +223,33 @@ async function getTrainingRecord(lessonId) {
  */
 async function saveTrainingRecord(data) {
   const app = getApp();
+  const existing = await getTrainingRecord(data.lesson_id);
+  const recordData = {
+    ...data,
+    coach_openid: app.globalData.openid,
+    updated_at: new Date()
+  };
+
+  if (existing && existing._id) {
+    return db.collection('training_records').doc(existing._id).update({
+      data: recordData
+    });
+  }
+
   return db.collection('training_records').add({
     data: {
-      ...data,
-      coach_openid: app.globalData.openid,
+      ...recordData,
       created_at: new Date()
     }
   });
+}
+
+/**
+ * 完成课程并扣减课时（云函数事务）
+ * @param {string} lessonId
+ */
+async function completeLesson(lessonId) {
+  return callCloud('completeLesson', { lessonId });
 }
 
 // ===== lesson_card_logs 表操作 =====
@@ -392,6 +399,7 @@ module.exports = {
   getLessonDetail,
   createLesson,
   updateLesson,
+  completeLesson,
   getStudentLessons,
   getTrainingRecord,
   saveTrainingRecord,

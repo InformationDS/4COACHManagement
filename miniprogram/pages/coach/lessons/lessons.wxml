@@ -1,5 +1,51 @@
 <!-- pages/coach/lessons/lessons.wxml -->
 <view class="container">
+  <!-- 当日概览 -->
+  <view class="workbench-card">
+    <view class="workbench-top">
+      <view>
+        <text class="workbench-label">当日安排</text>
+        <text class="workbench-date">{{selectedDate}}</text>
+      </view>
+      <view class="workbench-actions">
+        <t-button theme="default" variant="outline" size="small" bind:tap="onQuickAddStudent">加学员</t-button>
+        <t-button theme="primary" size="small" bind:tap="onCreateLesson">排课</t-button>
+      </view>
+    </view>
+
+    <view class="next-lesson {{daySummary.nextStudent ? '' : 'is-empty'}}">
+      <view wx:if="{{daySummary.nextStudent}}">
+        <text class="next-title">下一节</text>
+        <text class="next-main">{{daySummary.nextStudent}} · {{daySummary.nextTime}}</text>
+        <text class="next-sub">{{daySummary.nextLocation}}</text>
+      </view>
+      <view wx:else>
+        <text class="next-title">下一节</text>
+        <text class="next-main">暂无待上课程</text>
+        <text class="next-sub">今天还很空</text>
+      </view>
+    </view>
+
+    <view class="summary-grid">
+      <view class="summary-item">
+        <text class="summary-number">{{daySummary.total}}</text>
+        <text class="summary-label">全部</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-number">{{daySummary.confirmed}}</text>
+        <text class="summary-label">待上</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-number">{{daySummary.completed}}</text>
+        <text class="summary-label">完成</text>
+      </view>
+      <view class="summary-item">
+        <text class="summary-number">{{daySummary.pending}}</text>
+        <text class="summary-label">待确认</text>
+      </view>
+    </view>
+  </view>
+
   <!-- 日历组件 -->
   <calendar lessons="{{lessons}}" value="{{selectedDate}}" bind:change="onCalendarChange" />
 
@@ -33,7 +79,7 @@
     <view class="modal-center">
       <view class="modal-content">
         <view class="modal-header">
-          <text class="modal-title">排课</text>
+          <text class="modal-title">添加课程</text>
           <view class="modal-close" bindtap="onCloseCreate">✕</view>
         </view>
         <view class="form-group mt-16">
@@ -49,6 +95,8 @@
           </picker>
         </view>
         <time-grid
+          start-time="{{startTime}}"
+          end-time="{{endTime}}"
           duration="{{lessonDuration}}"
           occupied="{{occupiedSlots}}"
           bind:change="onTimeChange"
@@ -63,7 +111,7 @@
         </view>
         <view class="modal-actions mt-24">
           <t-button theme="default" variant="outline" size="medium" class="flex-1" bind:tap="onCloseCreate">取消</t-button>
-          <t-button theme="primary" size="medium" class="flex-1 ml-16" loading="{{creating}}" bind:tap="onConfirmCreate">确认排课</t-button>
+          <t-button theme="primary" size="medium" class="flex-1 ml-16" loading="{{creating}}" bind:tap="onConfirmCreate">保存</t-button>
         </view>
       </view>
     </view>

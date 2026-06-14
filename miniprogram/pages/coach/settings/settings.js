@@ -1,5 +1,5 @@
 // pages/coach/settings/settings.js
-const { getCoachSettings, saveCoachSettings, getStudents } = require('../../../utils/api');
+const { getCoachSettings, saveCoachSettings } = require('../../../utils/api');
 
 // 星期名称
 const WEEKDAY_NAMES = ['', '一', '二', '三', '四', '五', '六', '日'];
@@ -62,12 +62,7 @@ Page({
     dateBlockNote: '',
 
     // 避免 onShow 重复刷掉未保存编辑
-    _firstLoad: true,
-
-    // 调试
-    studentNames: [],
-    students: [],
-    debugStudentIdx: 0
+    _firstLoad: true
   },
 
   async onShow() {
@@ -78,7 +73,6 @@ Page({
       this.setData({ _firstLoad: false });
       await this.loadSettings();
     }
-    await this.loadStudents();
   },
 
   async loadSettings() {
@@ -102,16 +96,6 @@ Page({
       console.error(e);
       this.setData({ loading: false });
     }
-  },
-
-  async loadStudents() {
-    try {
-      const students = await getStudents();
-      this.setData({
-        studentNames: students.map(s => s.name),
-        students
-      });
-    } catch (e) { /* ignore */ }
   },
 
   // ===== 课程时长 =====
@@ -278,34 +262,5 @@ Page({
     this.setData({ saving: false });
   },
 
-  // ===== 开发者调试：切换学员视角 =====
-  onDebugStudentChange(e) {
-    this.setData({ debugStudentIdx: parseInt(e.detail.value) });
-  },
-
-  onSwitchToStudent() {
-    const { students, debugStudentIdx } = this.data;
-    const student = students[debugStudentIdx];
-    if (!student) return;
-
-    wx.showModal({
-      title: '切换学员视角',
-      content: `将以「${student.name}」的身份预览学员端。重新打开小程序自动恢复教练身份。`,
-      success: (res) => {
-        if (res.confirm) {
-          const app = getApp();
-          app.globalData.role = 'student';
-          app.globalData.userInfo = {
-            student_id: student._id,
-            name: student.name,
-            phone: student.phone || ''
-          };
-          wx.showToast({ title: '正在跳转学员端...', icon: 'none' });
-          setTimeout(() => {
-            wx.switchTab({ url: '/pages/student/booking/booking' });
-          }, 500);
-        }
-      }
-    });
-  }
+  // 学员端预览入口在教练单人模式中暂不开放。
 });

@@ -49,9 +49,15 @@ App({
 
         if (userRes.data && userRes.data.length > 0) {
           const user = userRes.data[0];
-          this.globalData.role = user.role;
-          this.globalData.userInfo = user;
-          console.log('用户角色：', user.role);
+          if (user.role === 'student') {
+            this.globalData.role = 'unknown';
+            this.globalData.userInfo = null;
+            console.log('旧学员角色已暂不开放');
+          } else {
+            this.globalData.role = user.role;
+            this.globalData.userInfo = user;
+            console.log('用户角色：', user.role);
+          }
         } else {
           this.globalData.role = 'unknown';
           console.log('未注册用户');

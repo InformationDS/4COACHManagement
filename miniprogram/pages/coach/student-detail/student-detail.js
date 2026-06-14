@@ -67,14 +67,6 @@ Page({
         getStudentLessons(id, 50)
       ]);
 
-      // DEBUG: 诊断近期课程为空问题
-      console.log('[DEBUG] studentId传入:', id);
-      console.log('[DEBUG] student._id:', student._id);
-      console.log('[DEBUG] lessons返回条数:', lessons.length);
-      if (lessons.length > 0) {
-        console.log('[DEBUG] 首条lesson.student_id:', lessons[0].student_id);
-      }
-
       // 格式化日期显示
       const fmtDate = (d) => {
         if (!d) return '';
@@ -83,11 +75,6 @@ Page({
       };
 
       const recentLessons = lessons.map(l => ({ ...l, _dateShort: fmtDate(l.date) }));
-
-      // DEBUG: setData 前检查
-      console.log('[DEBUG] recentLessons 映射后条数:', recentLessons.length);
-      console.log('[DEBUG] recentLessons[0]._dateShort:', recentLessons[0] ? recentLessons[0]._dateShort : 'N/A');
-      console.log('[DEBUG] isEdit:', this.data.isEdit);
 
       this.setData({
         student,
@@ -110,10 +97,6 @@ Page({
         showAllLessons: false,
         loading: false
       });
-
-      // DEBUG: setData 后检查
-      console.log('[DEBUG] setData后 recentLessons.length:', this.data.recentLessons.length);
-      console.log('[DEBUG] setData后 displayLessons.length:', this.data.displayLessons.length);
     } catch (err) {
       console.error('加载学员数据失败:', err);
       wx.showToast({ title: '加载失败', icon: 'none' });
@@ -202,23 +185,6 @@ Page({
     } finally {
       this.setData({ saving: false });
     }
-  },
-
-  // ===== 分享邀请学员 =====
-
-  onShareToStudent() {
-    // 触发微信分享对话框（配合 WXML 的 open-type="share"）
-    // onShareAppMessage 会自动被调用
-  },
-
-  onShareAppMessage() {
-    const { student, studentId } = this.data;
-    const app = getApp();
-    return {
-      title: `${student.name || '学员'}，快来绑定你的私教助手`,
-      path: `/pages/common/login-guide/login-guide?student_id=${studentId}&coach_openid=${app.globalData.openid}`,
-      imageUrl: student.avatar_url || ''
-    };
   },
 
   // ===== 课时卡管理 =====

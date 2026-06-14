@@ -122,9 +122,6 @@
       <t-button theme="primary" size="large" block loading="{{saving}}" disabled="{{saving}}" bind:tap="onSave">
         {{isEdit ? '保存修改' : '添加学员'}}
       </t-button>
-      <t-button wx:if="{{isEdit}}" theme="default" variant="outline" size="large" block style="margin-top: var(--space-sm)" open-type="share" bind:tap="onShareToStudent">
-        邀请学员绑定
-      </t-button>
     </view>
   </block>
 

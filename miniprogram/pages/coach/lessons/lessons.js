@@ -1,9 +1,8 @@
 // pages/coach/lessons/lessons.js
-const { formatDate, isPast } = require('../../../utils/date');
+const { formatDate } = require('../../../utils/date');
 const {
   getLessons, createLesson, updateLesson, getStudents, getCoachSettings,
-  addLessonCardLog, updateStudent, getStudentDetail,
-  sendSubscribeMessage, getStudentOpenid
+  completeLesson
 } = require('../../../utils/api');
 
 Page({
@@ -15,10 +14,21 @@ Page({
     studentNames: [],
     studentIdx: 0,
     lessonDuration: 60,
+    startTime: '08:00',
+    endTime: '20:00',
     locations: [],
     locationIdx: 0,
     occupiedSlots: [],       // 已占时段字符串列表（给time-grid）
     _occupiedRanges: [],     // 已占时间区间列表（冲突检测）
+    daySummary: {
+      total: 0,
+      pending: 0,
+      confirmed: 0,
+      completed: 0,
+      nextStudent: '',
+      nextTime: '',
+      nextLocation: ''
+    },
     showCreateModal: false,
     selectedTime: '',
     selectedStartTime: '',
@@ -55,9 +65,12 @@ Page({
       this.setData({
         lessons,
         todayLessons: todayInfo.todayLessons,
+        daySummary: todayInfo.daySummary,
         students,
         studentNames,
         lessonDuration: settings ? settings.lesson_duration || 60 : 60,
+        startTime: settings ? settings.daily_start_time || '08:00' : '08:00',
+        endTime: settings ? settings.daily_end_time || '20:00' : '20:00',
         locations: settings ? settings.common_locations || [] : [],
         occupiedSlots: todayInfo.occupiedSlots,
         _occupiedRanges: todayInfo.occupiedRanges
@@ -84,7 +97,24 @@ Page({
       .filter(l => (typeof l.date === 'string' ? l.date : formatDate(l.date)) === date)
       .sort((a, b) => a.start_time.localeCompare(b.start_time));
 
-    return { todayLessons, occupiedSlots, occupiedRanges };
+    const currentDate = formatDate(new Date());
+    const now = new Date();
+    const nowText = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const nextLesson = activeLessons
+      .filter(l => date !== currentDate || !l.end_time || l.end_time >= nowText)
+      .sort((a, b) => a.start_time.localeCompare(b.start_time))[0] || activeLessons[0] || null;
+
+    const daySummary = {
+      total: todayLessons.length,
+      pending: todayLessons.filter(l => l.status === 'pending').length,
+      confirmed: todayLessons.filter(l => l.status === 'confirmed').length,
+      completed: todayLessons.filter(l => l.status === 'completed').length,
+      nextStudent: nextLesson ? (nextLesson.student_name || '学员') : '',
+      nextTime: nextLesson ? `${nextLesson.start_time}-${nextLesson.end_time}` : '',
+      nextLocation: nextLesson ? (nextLesson.location || '未指定地点') : ''
+    };
+
+    return { todayLessons, occupiedSlots, occupiedRanges, daySummary };
   },
 
   onCalendarChange(e) {
@@ -93,9 +123,14 @@ Page({
     this.setData({
       selectedDate: date,
       todayLessons: info.todayLessons,
+      daySummary: info.daySummary,
       occupiedSlots: info.occupiedSlots,
       _occupiedRanges: info.occupiedRanges
     });
+  },
+
+  onQuickAddStudent() {
+    wx.navigateTo({ url: '/pages/coach/student-detail/student-detail' });
   },
 
   // ===== 排课 =====
@@ -144,7 +179,7 @@ Page({
     this.setData({ creating: true });
     try {
       const [s, e] = selectedTime.split('-');
-      const newLesson = await createLesson({
+      await createLesson({
         student_id: student._id,
         student_name: student.name,
         coach_openid: getApp().globalData.openid,
@@ -152,20 +187,12 @@ Page({
         start_time: s,
         end_time: e,
         location: locations[locationIdx] || '',
-        status: 'pending',
+        status: 'confirmed',
         initiated_by: 'coach'
       });
 
-      wx.showToast({ title: '排课成功', icon: 'success' });
+      wx.showToast({ title: '已加入日程', icon: 'success' });
       this.setData({ showCreateModal: false });
-
-      // 发送通知给学员（异步，不阻塞）
-      this._notifyStudent(student._id, 'booking_notify', {
-        studentName: student.name,
-        date: selectedDate,
-        time: `${s}-${e}`,
-        location: locations[locationIdx] || '待定'
-      });
 
       this.loadData();
     } catch (err) {
@@ -196,16 +223,6 @@ Page({
   async onConfirmLesson() {
     const lesson = this.data.detailLesson;
     await this._changeLessonStatus(lesson._id, 'confirmed');
-
-    // 通知学员：教练已确认
-    if (lesson.student_id) {
-      this._notifyStudent(lesson.student_id, 'confirm_notify', {
-        studentName: lesson.student_name || '学员',
-        date: typeof lesson.date === 'string' ? lesson.date : formatDate(lesson.date),
-        time: `${lesson.start_time}-${lesson.end_time}`,
-        location: lesson.location || '待定'
-      });
-    }
   },
 
   // 取消课程（打开原因输入弹窗）
@@ -218,18 +235,7 @@ Page({
     const lessonId = this.data.detailLesson._id;
     const reason = this.data.cancelReason.trim() || '教练取消';
     this.setData({ showCancelModal: false });
-    await this._changeLessonStatus(lessonId, 'cancelled', false, reason);
-
-    // 通知学员：课程已取消
-    const lesson = this.data.detailLesson;
-    if (lesson.student_id) {
-      this._notifyStudent(lesson.student_id, 'cancel_notify', {
-        studentName: lesson.student_name || '学员',
-        date: typeof lesson.date === 'string' ? lesson.date : formatDate(lesson.date),
-        time: `${lesson.start_time}-${lesson.end_time}`,
-        reason: reason
-      });
-    }
+    await this._changeLessonStatus(lessonId, 'cancelled', reason);
   },
 
   // 关闭取消弹窗
@@ -246,9 +252,26 @@ Page({
       title: '完成课程',
       content: '确认课程已完成？将自动扣减 1 课时。',
       success(res) {
-        if (res.confirm) self._changeLessonStatus(lessonId, 'completed', true);
+        if (res.confirm) self._completeLesson(lessonId);
       }
     });
+  },
+
+  async _completeLesson(lessonId) {
+    try {
+      const res = await completeLesson(lessonId);
+      if (!res || !res.success) {
+        wx.showToast({ title: (res && res.message) || '操作失败', icon: 'none' });
+        return;
+      }
+
+      wx.showToast({ title: res.skipped ? '已完成' : '已完成并扣课时', icon: 'success' });
+      this.setData({ showDetailModal: false, showCancelModal: false });
+      this.loadData();
+    } catch (e) {
+      console.error('完成课程失败:', e);
+      wx.showToast({ title: '操作失败', icon: 'none' });
+    }
   },
 
   // 跳转训练记录页面
@@ -264,10 +287,9 @@ Page({
    * 课程状态变更核心方法
    * @param {string} lessonId    - 课程 ID
    * @param {string} status      - 目标状态
-   * @param {boolean} deduct     - 是否扣减课时
    * @param {string} cancelReason - 取消原因（status=cancelled 时）
    */
-  async _changeLessonStatus(lessonId, status, deduct = false, cancelReason = '') {
+  async _changeLessonStatus(lessonId, status, cancelReason = '') {
     try {
       const updateData = { status };
       if (status === 'cancelled') {
@@ -278,68 +300,14 @@ Page({
       await updateLesson(lessonId, updateData);
       console.log('课程状态已更新:', lessonId, '→', status);
 
-      // 扣减课时（标记完成时）
-      if (deduct) {
-        const detailLesson = this.data.detailLesson;
-        const studentId = detailLesson.student_id;
-        if (!studentId) {
-          console.warn('课程缺少 student_id，无法扣减课时');
-        } else {
-          const student = await getStudentDetail(studentId).catch(() => null);
-          if (student) {
-            const newBalance = Math.max(0, (student.remaining_lessons || 0) - 1);
-            await updateStudent(studentId, { remaining_lessons: newBalance });
-            await addLessonCardLog({
-              student_id: studentId,
-              change_amount: -1,
-              balance_after: newBalance,
-              reason: '课程完成自动扣减',
-              related_lesson_id: lessonId
-            });
-            console.log(`课时已扣减: ${student.name} ${student.remaining_lessons}→${newBalance}`);
-          }
-        }
-      }
-
-      const labels = { confirmed: '已确认', cancelled: '已取消', completed: '已完成' };
+      const labels = { confirmed: '已确认', cancelled: '已取消' };
       wx.showToast({ title: labels[status], icon: 'success' });
 
       this.setData({ showDetailModal: false, showCancelModal: false });
       this.loadData();
     } catch (e) {
-      console.error('课程操作失败:', lessonId, status, deduct, e);
+      console.error('课程操作失败:', lessonId, status, e);
       wx.showToast({ title: '操作失败: ' + (e.message || '未知错误'), icon: 'none' });
-    }
-  },
-
-  /**
-   * 向学员发送订阅消息（异步，不阻塞主流程）
-   * @param {string} studentId - 学员 _id
-   * @param {string} scene     - 通知场景
-   * @param {object} info      - 课程信息
-   */
-  async _notifyStudent(studentId, scene, info) {
-    try {
-      const studentOpenid = await getStudentOpenid(studentId);
-      if (!studentOpenid) {
-        console.warn('学员未绑定 openid，无法发送通知');
-        return;
-      }
-      // 请求订阅消息授权提示（由页面触发，这里仅发送）
-      await sendSubscribeMessage({
-        scene,
-        toOpenid: studentOpenid,
-        data: {
-          thing1: info.studentName || '学员',
-          thing2: scene === 'cancel_notify' ? (info.reason || '课程已取消') : (info.location || '已确认'),
-          time3: info.time || '',
-          date4: info.date || '',
-          phrase5: scene === 'confirm_notify' ? '已确认' : scene === 'cancel_notify' ? '已取消' : '待确认',
-          page: ''
-        }
-      });
-    } catch (e) {
-      console.warn('通知学员失败:', e);
     }
   }
 });
