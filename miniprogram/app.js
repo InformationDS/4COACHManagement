@@ -1,18 +1,16 @@
-// app.js - 自由私人教练助手
-// 全局入口：云开发初始化、角色识别
-
+// app.js - private coach assistant
 App({
   globalData: {
-    openid: '',       // 当前用户 openid
-    role: '',         // 'coach' | 'student' | 'unknown'
-    userInfo: null,   // 当前用户信息
-    ready: false      // 初始化完成标志
+    openid: '',
+    role: '',
+    userInfo: null,
+    ready: false,
+    pendingSchedule: null
   },
 
   onLaunch() {
-    // 初始化云开发
     if (!wx.cloud) {
-      console.error('请使用 2.2.3 或以上的基础库以使用云能力');
+      console.error('Please use base library 2.2.3 or above for cloud capability.');
       this.globalData.ready = true;
       return;
     }
@@ -22,24 +20,15 @@ App({
       traceUser: true
     });
 
-    // 云环境初始化后延迟一下再调云函数（避免环境初始化未完成就调用）
     this._initUserRole();
   },
 
-  /**
-   * 获取 openid 并确定角色
-   */
   async _initUserRole() {
     try {
-      // 1. 获取 openid
-      const res = await wx.cloud.callFunction({
-        name: 'getOpenid'
-      });
+      const res = await wx.cloud.callFunction({ name: 'getOpenid' });
       const openid = res.result.openid;
       this.globalData.openid = openid;
-      console.log('openid 获取成功');
 
-      // 2. 查 users 表
       try {
         const db = wx.cloud.database();
         const userRes = await db.collection('users')
@@ -49,42 +38,33 @@ App({
 
         if (userRes.data && userRes.data.length > 0) {
           const user = userRes.data[0];
-          if (user.role === 'student') {
-            this.globalData.role = 'unknown';
-            this.globalData.userInfo = null;
-            console.log('旧学员角色已暂不开放');
-          } else {
-            this.globalData.role = user.role;
-            this.globalData.userInfo = user;
-            console.log('用户角色：', user.role);
-          }
+          this.globalData.role = user.role === 'coach' ? 'coach' : 'unknown';
+          this.globalData.userInfo = this.globalData.role === 'coach' ? user : null;
         } else {
           this.globalData.role = 'unknown';
-          console.log('未注册用户');
+          this.globalData.userInfo = null;
         }
       } catch (dbErr) {
-        console.error('数据库查询失败：', dbErr);
+        console.error('Failed to query user role:', dbErr);
         this.globalData.role = 'unknown';
+        this.globalData.userInfo = null;
       }
     } catch (err) {
-      console.error('初始化失败：', err);
-      // 超时或其他错误，直接标记为 unknown
+      console.error('Failed to initialize user role:', err);
       this.globalData.role = 'unknown';
+      this.globalData.userInfo = null;
     } finally {
       this.globalData.ready = true;
     }
   },
 
-  /**
-   * 刷新用户角色信息
-   */
   async refreshUserRole() {
     this.globalData.ready = false;
     await this._initUserRole();
   },
 
   isRegistered() {
-    return this.globalData.role !== 'unknown' && this.globalData.role !== '';
+    return this.globalData.role === 'coach';
   },
 
   getRole() {

@@ -66,6 +66,31 @@
   color: var(--color-text);
 }
 
+.name-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  min-width: 0;
+}
+
+.balance-tag {
+  flex-shrink: 0;
+  padding: 4rpx 12rpx;
+  border-radius: 999rpx;
+  font-size: 20rpx;
+  font-weight: 500;
+}
+
+.balance-tag-empty {
+  color: var(--color-danger);
+  background: var(--color-danger-light);
+}
+
+.balance-tag-low {
+  color: #B7791F;
+  background: #FEF3C7;
+}
+
 .student-meta {
   font-size: var(--text-xs);
   color: var(--color-text-secondary);
@@ -86,6 +111,16 @@
   font-weight: 700;
   color: var(--color-brand);
   line-height: 1;
+}
+
+.student-lessons-empty .lessons-count,
+.student-lessons-empty .lessons-label {
+  color: var(--color-danger);
+}
+
+.student-lessons-low .lessons-count,
+.student-lessons-low .lessons-label {
+  color: #B7791F;
 }
 
 .lessons-label {

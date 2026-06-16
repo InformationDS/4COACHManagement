@@ -1,6 +1,5 @@
-<!-- pages/coach/students/students.wxml - 学员列表 -->
+<!-- pages/coach/students/students.wxml -->
 <view class="container">
-  <!-- 搜索栏 -->
   <view class="search-bar">
     <t-search
       placeholder="搜索学员姓名..."
@@ -11,7 +10,6 @@
     />
   </view>
 
-  <!-- 学员列表 -->
   <view wx:if="{{students.length > 0}}" class="student-list">
     <view
       class="student-card"
@@ -25,13 +23,16 @@
         <text wx:else class="avatar-placeholder">{{item.name[0]}}</text>
       </view>
       <view class="student-info">
-        <text class="student-name">{{item.name}}</text>
+        <view class="name-row">
+          <text class="student-name">{{item.name}}</text>
+          <text wx:if="{{item.balanceLabel}}" class="balance-tag balance-tag-{{item.balanceStatus}}">{{item.balanceLabel}}</text>
+        </view>
         <text class="student-meta">
           <text wx:if="{{item.last_lesson_date}}">最近上课：{{item.last_lesson_date}}</text>
           <text wx:else class="text-muted">暂无上课记录</text>
         </text>
       </view>
-      <view class="student-lessons">
+      <view class="student-lessons student-lessons-{{item.balanceStatus}}">
         <text class="lessons-count">{{item.remaining_lessons || 0}}</text>
         <text class="lessons-label">剩余课时</text>
       </view>
@@ -39,12 +40,10 @@
     </view>
   </view>
 
-  <!-- 加载状态 -->
   <view wx:if="{{loading}}" class="loading-wrap">
     <t-loading theme="circular" size="48rpx" text="加载中..." />
   </view>
 
-  <!-- 空状态 -->
   <view wx:elif="{{students.length === 0}}" class="empty-wrap">
     <t-empty
       icon="user"
@@ -59,9 +58,8 @@
     >添加第一位学员</t-button>
   </view>
 
-  <!-- 添加 FAB -->
   <view class="fab" wx:if="{{students.length > 0}}" bindtap="onAddStudent">
-    <text class="fab-icon">＋</text>
+    <text class="fab-icon">+</text>
     <text class="fab-text">添加</text>
   </view>
 </view>

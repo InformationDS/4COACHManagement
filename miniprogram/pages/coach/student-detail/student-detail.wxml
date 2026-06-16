@@ -1,4 +1,4 @@
-<!-- pages/coach/student-detail/student-detail.wxml - 学员详情/添加 -->
+<!-- pages/coach/student-detail/student-detail.wxml -->
 <view class="container">
   <block wx:if="{{loading}}">
     <view class="loading-wrap">
@@ -7,17 +7,15 @@
   </block>
 
   <block wx:else>
-    <!-- ===== 头像区域 ===== -->
     <view class="avatar-section">
       <view class="avatar-box" bindtap="onChooseAvatar">
         <image wx:if="{{form.avatar_url}}" src="{{form.avatar_url}}" mode="aspectFill" />
-        <text wx:else class="avatar-box-placeholder">📷</text>
-        <view class="avatar-camera">📷</view>
+        <text wx:else class="avatar-box-placeholder">头像</text>
+        <view class="avatar-camera">换</view>
       </view>
       <text class="avatar-hint">点击更换头像</text>
     </view>
 
-    <!-- ===== 基本信息表单 ===== -->
     <view class="card">
       <view class="card-header">基本信息</view>
 
@@ -28,7 +26,7 @@
 
       <view class="form-group">
         <text class="form-label">手机号 <text class="required">*</text></text>
-        <input class="form-input" type="number" maxlength="11" placeholder="手机号码" value="{{form.phone}}" data-field="phone" bindinput="onFieldChange" />
+        <input class="form-input" type="number" maxlength="11" placeholder="手机号" value="{{form.phone}}" data-field="phone" bindinput="onFieldChange" />
       </view>
 
       <view class="form-row">
@@ -52,7 +50,7 @@
 
       <view class="form-group">
         <text class="form-label">上课地点偏好</text>
-        <input class="form-input" placeholder="如：XX健身房" value="{{form.location_preference}}" data-field="location_preference" bindinput="onFieldChange" />
+        <input class="form-input" placeholder="如：工作室、常用健身房" value="{{form.location_preference}}" data-field="location_preference" bindinput="onFieldChange" />
       </view>
 
       <view class="form-group">
@@ -61,7 +59,6 @@
       </view>
     </view>
 
-    <!-- ===== 近期课程（仅编辑模式） ===== -->
     <view class="card" wx:if="{{isEdit}}">
       <view class="card-header flex-between">
         <text>近期课程</text>
@@ -98,7 +95,6 @@
       </view>
     </view>
 
-    <!-- ===== 课时卡（仅编辑模式） ===== -->
     <view class="card" wx:if="{{isEdit}}">
       <view class="card-header">课时卡</view>
 
@@ -112,12 +108,15 @@
         <t-button theme="default" variant="outline" size="medium" class="flex-1 ml-16" bind:tap="onDeduct">手动扣减</t-button>
       </view>
 
+      <view class="schedule-action">
+        <t-button theme="default" variant="outline" size="medium" block bind:tap="onScheduleLesson">给 TA 排课</t-button>
+      </view>
+
       <view class="text-center mt-16">
-        <text class="text-sm text-brand" bindtap="onShowLessonCardDetail">查看课时记录 →</text>
+        <text class="text-sm text-brand" bindtap="onShowLessonCardDetail">查看课时记录</text>
       </view>
     </view>
 
-    <!-- ===== 保存按钮 ===== -->
     <view class="safe-bottom" style="padding: var(--space-lg) 0 0;">
       <t-button theme="primary" size="large" block loading="{{saving}}" disabled="{{saving}}" bind:tap="onSave">
         {{isEdit ? '保存修改' : '添加学员'}}
@@ -125,7 +124,6 @@
     </view>
   </block>
 
-  <!-- ===== 充值弹窗 ===== -->
   <t-dialog
     visible="{{rechargeVisible}}"
     title="{{rechargeMode === 'deduct' ? '扣减课时' : '充值课时'}}"
@@ -141,7 +139,6 @@
     </view>
   </t-dialog>
 
-  <!-- ===== 课时记录详情弹窗 ===== -->
   <t-dialog
     visible="{{showLessonCardDetail}}"
     title="课时详情"

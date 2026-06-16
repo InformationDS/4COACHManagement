@@ -26,10 +26,15 @@ Page({
       const keyword = this.data.keyword.trim();
       const students = await getStudents(keyword);
       // 格式化日期
-      const formatted = students.map(s => ({
-        ...s,
-        last_lesson_date: s.last_lesson_date ? formatDate(s.last_lesson_date) : ''
-      }));
+      const formatted = students.map(s => {
+        const remaining = Number(s.remaining_lessons || 0);
+        return {
+          ...s,
+          last_lesson_date: s.last_lesson_date ? formatDate(s.last_lesson_date) : '',
+          balanceStatus: remaining <= 0 ? 'empty' : remaining <= 2 ? 'low' : 'normal',
+          balanceLabel: remaining <= 0 ? '待充值' : remaining <= 2 ? '课时偏低' : ''
+        };
+      });
       this.setData({ students: formatted, loading: false });
     } catch (err) {
       console.error('加载学员列表失败:', err);

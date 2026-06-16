@@ -1,9 +1,0 @@
-{
-  "usingComponents": {
-    "calendar": "/components/calendar/calendar",
-    "time-grid": "/components/time-grid/time-grid",
-    "t-button": "tdesign-miniprogram/button/button",
-    "t-tag": "tdesign-miniprogram/tag/tag"
-  },
-  "navigationBarTitleText": "约课"
-}

@@ -114,6 +114,10 @@
   gap: var(--space-sm);
 }
 
+.schedule-action {
+  margin-top: var(--space-sm);
+}
+
 /* ===== 课时变动记录 ===== */
 .section-title {
   font-size: var(--text-sm);

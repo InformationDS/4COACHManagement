@@ -1,18 +1,21 @@
 // pages/coach/student-detail/student-detail.js
 const {
-  getStudentDetail, addStudent, updateStudent, getLessonCardLogs,
-  addLessonCardLog, uploadImage, getStudentLessons
+  getStudentDetail,
+  addStudent,
+  updateStudent,
+  getLessonCardLogs,
+  adjustLessonBalance,
+  uploadImage,
+  getStudentLessons
 } = require('../../../utils/api');
 const { formatDateTime } = require('../../../utils/date');
 
 Page({
   data: {
-    isEdit: false,         // 是否为编辑模式
-    studentId: '',         // 学员 _id（编辑模式）
+    isEdit: false,
+    studentId: '',
     loading: false,
     saving: false,
-
-    // 表单数据
     form: {
       avatar_url: '',
       name: '',
@@ -23,27 +26,17 @@ Page({
       location_preference: '',
       notes: ''
     },
-
-    // 学员原始数据（编辑模式）
     student: {},
-
-    // 课时变动记录
     lessonLogs: [],
-
-    // 课程历史
-    recentLessons: [],     // 所有课程
-    displayLessons: [],    // 展示用（前5条或全部）
-    showAllLessons: false, // 是否展开全部课程
-
-    // 课时卡详情弹窗
+    recentLessons: [],
+    displayLessons: [],
+    showAllLessons: false,
     showLessonCardDetail: false,
-
-    // 充值弹窗
     rechargeVisible: false,
     rechargeAmount: '',
     rechargeReason: '',
     recharging: false,
-    rechargeMode: 'recharge' // 'recharge' | 'deduct'
+    rechargeMode: 'recharge'
   },
 
   onLoad(options) {
@@ -55,9 +48,6 @@ Page({
     }
   },
 
-  /**
-   * 加载已有学员数据
-   */
   async loadData(id) {
     this.setData({ loading: true });
     try {
@@ -67,13 +57,11 @@ Page({
         getStudentLessons(id, 50)
       ]);
 
-      // 格式化日期显示
       const fmtDate = (d) => {
         if (!d) return '';
         const s = typeof d === 'string' ? d : d.toString();
-        return s.length === 10 ? s.slice(5) : s.slice(0, 10); // "06-03"
+        return s.length === 10 ? s.slice(5) : s.slice(0, 10);
       };
-
       const recentLessons = lessons.map(l => ({ ...l, _dateShort: fmtDate(l.date) }));
 
       this.setData({
@@ -104,8 +92,6 @@ Page({
     }
   },
 
-  // ===== 头像 =====
-
   onChooseAvatar() {
     wx.chooseImage({
       count: 1,
@@ -127,8 +113,6 @@ Page({
     });
   },
 
-  // ===== 表单字段 =====
-
   onFieldChange(e) {
     const field = e.currentTarget.dataset.field;
     const value = e.detail.value;
@@ -140,12 +124,9 @@ Page({
     this.setData({ 'form.gender': value === this.data.form.gender ? '' : value });
   },
 
-  // ===== 保存 =====
-
   async onSave() {
     const { form, isEdit, studentId } = this.data;
 
-    // 校验必填字段
     if (!form.name.trim()) {
       wx.showToast({ title: '请输入姓名', icon: 'none' });
       return;
@@ -156,7 +137,6 @@ Page({
     }
 
     this.setData({ saving: true });
-
     try {
       const data = {
         name: form.name.trim(),
@@ -177,7 +157,6 @@ Page({
         wx.showToast({ title: '学员添加成功', icon: 'success' });
       }
 
-      // 延迟返回上一页
       setTimeout(() => wx.navigateBack(), 800);
     } catch (err) {
       console.error('保存失败:', err);
@@ -186,8 +165,6 @@ Page({
       this.setData({ saving: false });
     }
   },
-
-  // ===== 课时卡管理 =====
 
   onRecharge() {
     this.setData({
@@ -211,7 +188,16 @@ Page({
     this.setData({ rechargeVisible: false });
   },
 
-  // 阻止弹窗内部点击冒泡（空函数）
+  onScheduleLesson() {
+    const { studentId, student } = this.data;
+    if (!studentId) return;
+    getApp().globalData.pendingSchedule = {
+      studentId,
+      studentName: student.name || ''
+    };
+    wx.switchTab({ url: '/pages/coach/lessons/lessons' });
+  },
+
   noop() {},
 
   onRechargeInput(e) {
@@ -223,7 +209,7 @@ Page({
   },
 
   async onConfirmRecharge() {
-    const { rechargeAmount, rechargeReason, rechargeMode, studentId, student } = this.data;
+    const { rechargeAmount, rechargeReason, rechargeMode, studentId } = this.data;
     const amount = parseInt(rechargeAmount);
 
     if (isNaN(amount) || amount <= 0) {
@@ -232,40 +218,26 @@ Page({
     }
 
     const changeAmount = rechargeMode === 'deduct' ? -amount : amount;
-    const newBalance = (student.remaining_lessons || 0) + changeAmount;
-
-    if (newBalance < 0) {
-      wx.showToast({ title: '扣减后课时不能为负数', icon: 'none' });
-      return;
-    }
+    const reason = rechargeReason || (rechargeMode === 'deduct' ? '手动扣减' : '课时充值');
 
     this.setData({ recharging: true });
-
     try {
-      // 1. 写入日志
-      await addLessonCardLog({
-        student_id: studentId,
-        change_amount: changeAmount,
-        balance_after: newBalance,
-        reason: rechargeReason || (rechargeMode === 'deduct' ? '手动扣减' : '课时充值')
-      });
-
-      // 2. 更新学员剩余课时
-      await updateStudent(studentId, { remaining_lessons: newBalance });
+      const res = await adjustLessonBalance(studentId, changeAmount, reason);
+      if (!res || !res.success) {
+        wx.showToast({ title: (res && res.message) || '操作失败', icon: 'none' });
+        return;
+      }
 
       wx.showToast({ title: rechargeMode === 'deduct' ? '扣减成功' : '充值成功', icon: 'success' });
-
-      // 3. 刷新页面数据
       this.setData({ rechargeVisible: false, recharging: false });
       this.loadData(studentId);
     } catch (err) {
       console.error('课时操作失败:', err);
       wx.showToast({ title: '操作失败，请重试', icon: 'none' });
+    } finally {
       this.setData({ recharging: false });
     }
   },
-
-  // ===== 课程历史 =====
 
   onToggleAllLessons() {
     const showAll = !this.data.showAllLessons;
@@ -280,10 +252,7 @@ Page({
     if (status === 'completed') {
       wx.navigateTo({ url: `/pages/coach/training-record/training-record?lesson_id=${id}` });
     }
-    // 其他状态暂不处理，后续可扩展
   },
-
-  // ===== 课时卡详情弹窗 =====
 
   onShowLessonCardDetail() {
     this.setData({ showLessonCardDetail: true });
