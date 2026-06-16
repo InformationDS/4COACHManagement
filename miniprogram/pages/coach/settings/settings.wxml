@@ -54,6 +54,23 @@
       </view>
     </view>
 
+    <view class="card">
+      <view class="card-header">AI 助手状态</view>
+      <view class="ai-status-row">
+        <text class="ai-status-label">文本 AI</text>
+        <text class="ai-status-value {{aiStatus.aiAvailable ? 'ok' : 'bad'}}">{{aiStatus.aiAvailable ? '可用' : '不可用'}}</text>
+      </view>
+      <view class="ai-status-row">
+        <text class="ai-status-label">语音转写</text>
+        <text class="ai-status-value {{aiStatus.voiceAvailable ? 'ok' : 'warn'}}">{{aiStatus.voiceAvailable ? '可用' : '暂未接入'}}</text>
+      </view>
+      <view class="ai-status-row">
+        <text class="ai-status-label">模型通道</text>
+        <text class="ai-status-value">{{aiStatus.modelMode}}</text>
+      </view>
+      <text class="ai-status-note">{{aiStatus.message}}</text>
+    </view>
+
     <view class="safe-bottom" style="padding: var(--space-lg) 0 0;">
       <t-button theme="primary" size="large" block loading="{{saving}}" bind:tap="onSave">保存</t-button>
     </view>

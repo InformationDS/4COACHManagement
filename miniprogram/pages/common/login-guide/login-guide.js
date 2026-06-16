@@ -52,7 +52,7 @@ Page({
 
         setTimeout(() => {
           wx.switchTab({
-            url: '/pages/coach/lessons/lessons'
+            url: '/pages/coach/ai-assistant/ai-assistant'
           });
         }, 800);
       } else {

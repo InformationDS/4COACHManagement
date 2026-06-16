@@ -5,6 +5,7 @@ const {
   getCurrentUser,
   saveCurrentUserProfile
 } = require('../../../utils/api');
+const { getAiStatus } = require('../../../utils/aiApi');
 
 Page({
   data: {
@@ -18,13 +19,19 @@ Page({
       lesson_duration: 60,
       common_locations: []
     },
+    aiStatus: {
+      aiAvailable: true,
+      voiceAvailable: false,
+      modelMode: '',
+      message: ''
+    },
     newLocation: '',
     _firstLoad: true
   },
 
   async onShow() {
     if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setSelected(2);
+      this.getTabBar().setSelected(3);
     }
     if (this.data._firstLoad) {
       this.setData({ _firstLoad: false });
@@ -35,9 +42,10 @@ Page({
   async loadSettings() {
     this.setData({ loading: true });
     try {
-      const [settings, user] = await Promise.all([
+      const [settings, user, aiStatus] = await Promise.all([
         getCoachSettings(),
-        getCurrentUser()
+        getCurrentUser(),
+        getAiStatus()
       ]);
 
       this.setData({
@@ -49,6 +57,7 @@ Page({
           lesson_duration: settings ? (settings.lesson_duration || 60) : 60,
           common_locations: settings ? (settings.common_locations || []) : []
         },
+        aiStatus,
         loading: false
       });
     } catch (e) {

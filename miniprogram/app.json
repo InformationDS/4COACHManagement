@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/coach/ai-assistant/ai-assistant",
     "pages/coach/lessons/lessons",
     "pages/coach/students/students",
     "pages/coach/student-detail/student-detail",
@@ -15,6 +16,10 @@
     "backgroundColor": "#ffffff",
     "borderStyle": "white",
     "list": [
+      {
+        "pagePath": "pages/coach/ai-assistant/ai-assistant",
+        "text": "AI助手"
+      },
       {
         "pagePath": "pages/coach/lessons/lessons",
         "text": "日程"

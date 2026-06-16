@@ -16,7 +16,7 @@ function isRegistered() {
 
 function getHomePath(role) {
   const roleMap = {
-    coach: '/pages/coach/lessons/lessons',
+    coach: '/pages/coach/ai-assistant/ai-assistant',
     unknown: '/pages/common/login-guide/login-guide'
   };
   return roleMap[role] || roleMap.unknown;
