@@ -1,15 +1,22 @@
 // pages/coach/settings/settings.js
-const { getCoachSettings, saveCoachSettings } = require('../../../utils/api');
+const {
+  getCoachSettings,
+  saveCoachSettings,
+  getCurrentUser,
+  saveCurrentUserProfile
+} = require('../../../utils/api');
 
 Page({
   data: {
     loading: true,
     saving: false,
+    profile: {
+      name: '',
+      phone: ''
+    },
     settings: {
       lesson_duration: 60,
-      common_locations: [],
-      daily_start_time: '08:00',
-      daily_end_time: '20:00'
+      common_locations: []
     },
     newLocation: '',
     _firstLoad: true
@@ -28,13 +35,19 @@ Page({
   async loadSettings() {
     this.setData({ loading: true });
     try {
-      const s = await getCoachSettings();
+      const [settings, user] = await Promise.all([
+        getCoachSettings(),
+        getCurrentUser()
+      ]);
+
       this.setData({
+        profile: {
+          name: user ? (user.name || '') : '',
+          phone: user ? (user.phone || '') : ''
+        },
         settings: {
-          lesson_duration: s ? (s.lesson_duration || 60) : 60,
-          common_locations: s ? (s.common_locations || []) : [],
-          daily_start_time: s ? (s.daily_start_time || '08:00') : '08:00',
-          daily_end_time: s ? (s.daily_end_time || '20:00') : '20:00'
+          lesson_duration: settings ? (settings.lesson_duration || 60) : 60,
+          common_locations: settings ? (settings.common_locations || []) : []
         },
         loading: false
       });
@@ -44,16 +57,14 @@ Page({
     }
   },
 
+  onProfileInput(e) {
+    const field = e.currentTarget.dataset.field;
+    if (!field) return;
+    this.setData({ [`profile.${field}`]: e.detail.value });
+  },
+
   onDurationInput(e) {
     this.setData({ 'settings.lesson_duration': parseInt(e.detail.value) || 60 });
-  },
-
-  onDailyStartInput(e) {
-    this.setData({ 'settings.daily_start_time': e.detail.value });
-  },
-
-  onDailyEndInput(e) {
-    this.setData({ 'settings.daily_end_time': e.detail.value });
   },
 
   onLocationInput(e) {
@@ -61,26 +72,36 @@ Page({
   },
 
   onAddLocation() {
-    const v = this.data.newLocation.trim();
-    if (!v) return;
+    const value = this.data.newLocation.trim();
+    if (!value) return;
     this.setData({
-      'settings.common_locations': [...this.data.settings.common_locations, v],
+      'settings.common_locations': [...this.data.settings.common_locations, value],
       newLocation: ''
     });
   },
 
   onDeleteLocation(e) {
-    const idx = e.currentTarget.dataset.index;
-    const locs = [...this.data.settings.common_locations];
-    locs.splice(idx, 1);
-    this.setData({ 'settings.common_locations': locs });
+    const index = e.currentTarget.dataset.index;
+    const locations = [...this.data.settings.common_locations];
+    locations.splice(index, 1);
+    this.setData({ 'settings.common_locations': locations });
   },
 
   async onSave() {
     this.setData({ saving: true });
     try {
-      await saveCoachSettings(this.data.settings);
-      wx.showToast({ title: '设置已保存', icon: 'success' });
+      await Promise.all([
+        saveCoachSettings(this.data.settings),
+        saveCurrentUserProfile(this.data.profile)
+      ]);
+
+      const app = getApp();
+      app.globalData.userInfo = {
+        ...(app.globalData.userInfo || {}),
+        ...this.data.profile
+      };
+
+      wx.showToast({ title: '已保存', icon: 'success' });
     } catch (e) {
       console.error('保存设置失败:', e);
       wx.showToast({ title: '保存失败', icon: 'none' });

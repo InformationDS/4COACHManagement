@@ -7,10 +7,6 @@
         <text class="workbench-label">当日安排</text>
         <text class="workbench-date">{{selectedDate}}</text>
       </view>
-      <view class="workbench-actions">
-        <t-button theme="default" variant="outline" size="small" bind:tap="onQuickAddStudent">加学员</t-button>
-        <t-button theme="primary" size="small" bind:tap="onCreateLesson">排课</t-button>
-      </view>
     </view>
 
     <view class="next-lesson {{daySummary.nextStudent ? '' : 'is-empty'}}">
@@ -98,7 +94,9 @@
           start-time="{{startTime}}"
           end-time="{{endTime}}"
           duration="{{lessonDuration}}"
+          slot-interval="{{15}}"
           occupied="{{occupiedSlots}}"
+          occupied-ranges="{{_occupiedRanges}}"
           bind:change="onTimeChange"
         />
         <view class="form-group mt-16">

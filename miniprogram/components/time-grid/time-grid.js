@@ -1,118 +1,129 @@
 // components/time-grid/time-grid.js
 const { generateTimeSlots } = require('../../utils/date');
 
+function timeToMinutes(time) {
+  const [h, m] = String(time || '00:00').split(':').map(Number);
+  return (h || 0) * 60 + (m || 0);
+}
+
+function minutesToTime(minutes) {
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+function overlaps(start, end, range) {
+  if (!range || !range.start || !range.end) return false;
+  return start < range.end && end > range.start;
+}
+
 Component({
   properties: {
-    title: { type: String, value: '选择时间' },
-    startTime: { type: String, value: '08:00' },
-    endTime: { type: String, value: '18:00' },
+    title: { type: String, value: '选择开始时间' },
+    startTime: { type: String, value: '06:00' },
+    endTime: { type: String, value: '23:00' },
     duration: { type: Number, value: 60 },
+    slotInterval: { type: Number, value: 15 },
     occupied: { type: Array, value: [] },
-    value: { type: String, value: '' },
-    allowMulti: { type: Boolean, value: true }
+    occupiedRanges: { type: Array, value: [] },
+    value: { type: String, value: '' }
   },
 
   data: {
     slotItems: [],
     selectedStart: '',
     selectedEnd: '',
-    endTimes: [],
     slotIndexMap: {}
   },
 
   observers: {
-    // 结构变化才重建格子
-    'startTime,endTime,duration'() { this._build(); },
-    // 占用变化只刷新 disabled 状态，不重置选择
-    'occupied'() { this._refreshOccupied(); },
-    'value'(val) { if (val) { const [s, e] = val.split('-'); this.setData({ selectedStart: s, selectedEnd: e || s }); this._applySelection(); } }
+    'startTime,endTime,duration,slotInterval'() {
+      this._build();
+    },
+    'occupied,occupiedRanges'() {
+      this._applySelection();
+    },
+    value(val) {
+      if (!val) {
+        this.setData({ selectedStart: '', selectedEnd: '' });
+        this._applySelection();
+        return;
+      }
+      const [start, end] = val.split('-');
+      this.setData({ selectedStart: start, selectedEnd: end || '' });
+      this._applySelection();
+    }
   },
 
-  lifetimes: { attached() { this._build(); } },
+  lifetimes: {
+    attached() {
+      this._build();
+    }
+  },
 
   methods: {
     _build() {
-      const { startTime, endTime, duration } = this.data;
-      const times = generateTimeSlots(startTime, endTime, duration);
-      const endTimes = [];
+      const { startTime, endTime, duration, slotInterval } = this.data;
+      const maxEnd = timeToMinutes(endTime);
       const idxMap = {};
-      const items = times.map((t, i) => {
-        const [h, m] = t.split(':').map(Number);
-        const endM = m + duration;
-        const endH = h + Math.floor(endM / 60);
-        const et = `${String(endH).padStart(2, '0')}:${String(endM % 60).padStart(2, '0')}`;
-        endTimes.push(et);
-        idxMap[t] = i;
-        return { value: t, endTime: et, disabled: false, active: false, rangeActive: false };
-      });
-      this.setData({ slotItems: items, endTimes, slotIndexMap: idxMap });
-      this._applySelection();
-    },
+      const items = generateTimeSlots(startTime, endTime, slotInterval || 15)
+        .map((time) => {
+          const startM = timeToMinutes(time);
+          const endM = startM + duration;
+          return { value: time, endTime: minutesToTime(endM), endM };
+        })
+        .filter(item => item.endM <= maxEnd)
+        .map((item, index) => {
+          idxMap[item.value] = index;
+          return {
+            value: item.value,
+            endTime: item.endTime,
+            active: false,
+            rangeActive: false,
+            disabled: false
+          };
+        });
 
-    // 仅刷新占用状态，不重置选择
-    _refreshOccupied() {
+      this.setData({ slotItems: items, slotIndexMap: idxMap });
       this._applySelection();
     },
 
     onTapSlot(e) {
       const time = e.currentTarget.dataset.time;
-      const { slotIndexMap, allowMulti } = this.data;
-      const occupied = this.data.occupied || this.properties.occupied || [];
-      if (occupied.includes(time)) return;
+      const item = this.data.slotItems.find(slot => slot.value === time);
+      if (!item || item.disabled) return;
 
-      if (!this.data.selectedStart) {
-        this.setData({ selectedStart: time, selectedEnd: time });
-        this._applySelection();
-        this._emit();
-        return;
-      }
-
-      const idx = slotIndexMap[time];
-      const startIdx = slotIndexMap[this.data.selectedStart];
-      if (allowMulti && idx !== startIdx) {
-        const min = Math.min(startIdx, idx);
-        const max = Math.max(startIdx, idx);
-        const times = this.data.slotItems.map(s => s.value);
-        if (times.slice(min, max + 1).some(t => occupied.includes(t))) {
-          wx.showToast({ title: '范围内有已占用时段', icon: 'none' });
-          return;
-        }
-        this.setData({ selectedStart: times[min], selectedEnd: times[max] });
-      } else {
-        this.setData({ selectedStart: time, selectedEnd: time });
-      }
+      this.setData({ selectedStart: item.value, selectedEnd: item.endTime });
       this._applySelection();
       this._emit();
     },
 
     _applySelection() {
-      const { slotItems, selectedStart, selectedEnd, slotIndexMap } = this.data;
-      const occupied = this.data.occupied || this.properties.occupied || [];
-      if (!selectedStart || !slotItems.length) {
-        this.setData({ slotItems: slotItems.map(s => ({ ...s, active: false, rangeActive: false, disabled: occupied.includes(s.value) })) });
-        return;
-      }
-      const startI = slotIndexMap[selectedStart] ?? -1;
-      const endI = slotIndexMap[selectedEnd] ?? startI;
-      const min = Math.min(startI, endI);
-      const max = Math.max(startI, endI);
-      this.setData({
-        slotItems: slotItems.map((s, i) => ({
-          ...s,
-          active: i === startI,
-          rangeActive: i >= min && i <= max,
-          disabled: occupied.includes(s.value)
-        }))
-      });
+      const occupied = this.data.occupied || [];
+      const occupiedRanges = this.data.occupiedRanges || [];
+      const selectedStart = this.data.selectedStart;
+      const slotItems = this.data.slotItems.map(slot => ({
+        ...slot,
+        active: slot.value === selectedStart,
+        rangeActive: false,
+        disabled: occupied.includes(slot.value) || occupiedRanges.some(range => overlaps(slot.value, slot.endTime, range))
+      }));
+
+      this.setData({ slotItems });
     },
 
     _emit() {
-      const { selectedStart, selectedEnd, slotIndexMap, endTimes } = this.data;
-      if (!selectedStart) return this.triggerEvent('change', { value: '', startTime: '', endTime: '', count: 0 });
-      const endI = slotIndexMap[selectedEnd] ?? slotIndexMap[selectedStart];
-      const end = endTimes[endI] ?? selectedEnd;
-      const count = Math.abs(endI - (slotIndexMap[selectedStart] ?? 0)) + 1;
-      this.triggerEvent('change', { value: `${selectedStart}-${end}`, startTime: selectedStart, endTime: end, count });
+      const { selectedStart, selectedEnd } = this.data;
+      if (!selectedStart) {
+        this.triggerEvent('change', { value: '', startTime: '', endTime: '', count: 0 });
+        return;
+      }
+      this.triggerEvent('change', {
+        value: `${selectedStart}-${selectedEnd}`,
+        startTime: selectedStart,
+        endTime: selectedEnd,
+        count: 1
+      });
     },
 
     onClear() {

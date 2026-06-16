@@ -18,8 +18,8 @@ Page({
     studentNames: [],
     studentIdx: 0,
     lessonDuration: 60,
-    startTime: '08:00',
-    endTime: '20:00',
+    startTime: '06:00',
+    endTime: '23:00',
     locations: [],
     locationIdx: 0,
     occupiedSlots: [],
@@ -73,8 +73,8 @@ Page({
         students,
         studentNames,
         lessonDuration: settings ? settings.lesson_duration || 60 : 60,
-        startTime: settings ? settings.daily_start_time || '08:00' : '08:00',
-        endTime: settings ? settings.daily_end_time || '20:00' : '20:00',
+        startTime: '06:00',
+        endTime: '23:00',
         locations: settings ? settings.common_locations || [] : [],
         occupiedSlots: todayInfo.occupiedSlots,
         _occupiedRanges: todayInfo.occupiedRanges
@@ -134,10 +134,6 @@ Page({
       occupiedSlots: info.occupiedSlots,
       _occupiedRanges: info.occupiedRanges
     });
-  },
-
-  onQuickAddStudent() {
-    wx.navigateTo({ url: '/pages/coach/student-detail/student-detail' });
   },
 
   onCreateLesson() {

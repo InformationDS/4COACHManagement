@@ -5,7 +5,7 @@
   </view>
   <view class="time-grid">
     <view
-      class="time-slot {{item.active ? 'active' : ''}} {{item.rangeActive && !item.active ? 'range-active' : ''}} {{item.disabled ? 'disabled' : ''}}"
+      class="time-slot {{item.active ? 'active' : ''}} {{item.disabled ? 'disabled' : ''}}"
       wx:for="{{slotItems}}"
       wx:key="value"
       data-time="{{item.value}}"
@@ -15,7 +15,7 @@
     </view>
   </view>
   <view class="time-summary" wx:if="{{selectedStart}}">
-    <text class="time-summary-text">{{selectedStart}} - {{selectedEnd && slotIndexMap[selectedEnd] !== undefined ? slotItems[slotIndexMap[selectedEnd]].endTime : selectedStart}}</text>
+    <text class="time-summary-text">{{selectedStart}} - {{selectedEnd}}</text>
     <text class="time-summary-clear" bindtap="onClear">清除</text>
   </view>
 </view>

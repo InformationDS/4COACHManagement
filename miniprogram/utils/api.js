@@ -26,6 +26,21 @@ async function bindUserRole(role, extra = {}) {
   return callCloud('initUser', { role, ...extra });
 }
 
+async function saveCurrentUserProfile(data) {
+  const cleanData = {
+    name: (data.name || '').trim(),
+    phone: (data.phone || '').trim(),
+    updated_at: new Date()
+  };
+  const current = await getCurrentUser();
+
+  if (current && current._id) {
+    return db.collection('users').doc(current._id).update({ data: cleanData });
+  }
+
+  return bindUserRole('coach', cleanData);
+}
+
 // ===== students managed by coach =====
 
 async function getStudents(keyword = '') {
@@ -227,6 +242,7 @@ module.exports = {
   callCloud,
   getCurrentUser,
   bindUserRole,
+  saveCurrentUserProfile,
   getStudents,
   getStudentDetail,
   addStudent,

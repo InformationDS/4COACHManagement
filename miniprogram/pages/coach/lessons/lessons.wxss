@@ -31,12 +31,6 @@
   color: #fff;
 }
 
-.workbench-actions {
-  display: flex;
-  gap: 12rpx;
-  flex-shrink: 0;
-}
-
 .next-lesson {
   margin-top: 28rpx;
   padding: 24rpx;

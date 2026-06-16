@@ -1,7 +1,7 @@
 {
   "name": "parseTrainingRecord",
   "version": "1.0.0",
-  "description": "AI 结构化训练记录",
+  "description": "Parse training record with AI",
   "main": "index.js",
   "dependencies": {
     "wx-server-sdk": "~2.6.3"
