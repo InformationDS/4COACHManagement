@@ -322,6 +322,49 @@ Page({
     });
   },
 
+  onAskAiForLesson() {
+    const lesson = this.data.detailLesson;
+    if (!lesson || !lesson._id) return;
+
+    const isCompleted = lesson.status === 'completed';
+    getApp().globalData.pendingAiRequest = {
+      text: isCompleted
+        ? `帮我补${lesson.student_name || '这位学员'}这节课的训练记录`
+        : `帮我处理${lesson.student_name || '这位学员'}这节课`,
+      sourceContext: {
+        source: 'lesson_detail',
+        intent: isCompleted ? 'create_training_record' : 'query_today_lessons',
+        lesson_id: lesson._id,
+        student_id: lesson.student_id || ''
+      }
+    };
+
+    this.setData({ showDetailModal: false });
+    wx.switchTab({
+      url: '/pages/coach/ai-assistant/ai-assistant'
+    });
+  },
+
+  onAskAiUpdateLesson() {
+    const lesson = this.data.detailLesson;
+    if (!lesson || !lesson._id) return;
+
+    getApp().globalData.pendingAiRequest = {
+      text: `帮我修改${lesson.student_name || '这位学员'}这节课的时间或地点`,
+      sourceContext: {
+        source: 'lesson_detail',
+        intent: 'update_lesson',
+        lesson_id: lesson._id,
+        student_id: lesson.student_id || ''
+      }
+    };
+
+    this.setData({ showDetailModal: false });
+    wx.switchTab({
+      url: '/pages/coach/ai-assistant/ai-assistant'
+    });
+  },
+
   async _changeLessonStatus(lessonId, status, cancelReason = '') {
     try {
       const updateData = { status };

@@ -29,29 +29,44 @@ async function executeAiAction({ confirmationId }) {
   return callCloud('aiActionExecutor', { confirmationId });
 }
 
+async function cancelAiAction({ confirmationId }) {
+  return callCloud('aiActionExecutor', {
+    action: 'cancel',
+    confirmationId
+  });
+}
+
 async function getAiTodaySummary() {
   return sendAiMessage({
     text: '今天怎么样？',
     sourceContext: {
       source: 'ai_home',
-      intent: 'today_summary'
+      intent: 'today_summary',
+      silent: true
     }
   });
 }
 
 async function getAiStatus() {
-  return {
-    success: true,
-    aiAvailable: true,
-    voiceAvailable: false,
-    modelMode: 'cloud-function-openai-compatible',
-    message: 'AI 文本能力通过云函数提供；语音转写暂未接入。'
-  };
+  try {
+    return await callCloud('aiCoachAssistant', { action: 'status' });
+  } catch (err) {
+    return {
+      success: false,
+      aiAvailable: false,
+      modelConfigured: false,
+      voiceAvailable: false,
+      modelMode: 'unavailable',
+      degradedReason: err.message || 'status_check_failed',
+      message: 'AI 状态检查失败，传统页面仍可使用。'
+    };
+  }
 }
 
 module.exports = {
   sendAiMessage,
   executeAiAction,
+  cancelAiAction,
   getAiTodaySummary,
   getAiStatus,
   formatLocalDate

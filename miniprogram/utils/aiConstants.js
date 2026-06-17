@@ -3,6 +3,7 @@ const AI_RESPONSE_TYPES = {
   FOLLOWUP: 'followup',
   DRAFT_CARD: 'draft_card',
   CONFIRM_CARD: 'confirm_card',
+  CHOICE_CARD: 'choice_card',
   RESULT_CARD: 'result_card',
   REFUSAL: 'refusal',
   ERROR: 'error'
@@ -11,6 +12,7 @@ const AI_RESPONSE_TYPES = {
 const AI_CARD_TYPES = {
   SCHEDULE_CONFIRM: 'schedule_confirm_card',
   TRAINING_RECORD_DRAFT: 'training_record_draft_card',
+  TRAINING_RECORD_MODE_CHOICE: 'training_record_mode_choice_card',
   LESSON_UPDATE_CONFIRM: 'lesson_update_confirm_card',
   LESSON_CANCEL_CONFIRM: 'lesson_cancel_confirm_card',
   STUDENT_NOTE_CONFIRM: 'student_note_confirm_card',

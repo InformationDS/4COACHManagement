@@ -36,6 +36,15 @@
   text-align: center;
 }
 
+.ai-workbench-btn {
+  height: 72rpx;
+  border-radius: var(--td-radius-default);
+  background: var(--color-brand-light);
+  color: var(--color-brand);
+  font-size: 24rpx;
+  line-height: 72rpx;
+}
+
 /* ===== 录音按钮 ===== */
 .record-section {
   display: flex;

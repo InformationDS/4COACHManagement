@@ -75,6 +75,19 @@
             >取消</button>
           </view>
 
+          <view wx:if="{{item.type === 'choice_card' && item.card.options.length && !item.card.local_selected}}" class="card-actions">
+            <button
+              wx:for="{{item.card.options}}"
+              wx:for-item="option"
+              wx:for-index="optionIndex"
+              wx:key="id"
+              class="card-btn {{optionIndex === 0 ? 'secondary' : 'primary'}}"
+              data-message-id="{{item.id}}"
+              data-option-index="{{optionIndex}}"
+              bindtap="onChoiceOption"
+            >{{option.label}}</button>
+          </view>
+
           <view wx:if="{{item.card.local_cancelled}}" class="card-cancelled">已取消本次确认</view>
 
           <view wx:if="{{item.card.route && item.type !== 'confirm_card'}}" class="card-actions">
@@ -100,6 +113,7 @@
           wx:for="{{quickActions}}"
           wx:key="id"
           class="quick-chip"
+          data-id="{{item.id}}"
           data-prompt="{{item.prompt}}"
           bindtap="onQuickAction"
         >{{item.label}}</view>

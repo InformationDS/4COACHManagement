@@ -1,7 +1,7 @@
 .ai-page {
   min-height: 100vh;
   padding: 24rpx;
-  padding-bottom: calc(env(safe-area-inset-bottom) + 190rpx);
+  padding-bottom: calc(env(safe-area-inset-bottom) + 320rpx);
   box-sizing: border-box;
   background: #f0f2f5;
 }
@@ -290,11 +290,11 @@
   position: fixed;
   left: 0;
   right: 0;
-  bottom: calc(env(safe-area-inset-bottom) + 118rpx);
+  bottom: calc(env(safe-area-inset-bottom) + 218rpx);
   padding: 12rpx 24rpx;
   background: rgba(240, 242, 245, 0.96);
   box-sizing: border-box;
-  z-index: 10;
+  z-index: 1000;
 }
 
 .quick-scroll {
@@ -323,15 +323,15 @@
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: calc(env(safe-area-inset-bottom) + 100rpx);
   display: flex;
   align-items: flex-end;
   gap: 12rpx;
-  padding: 16rpx 24rpx calc(env(safe-area-inset-bottom) + 16rpx);
+  padding: 16rpx 24rpx;
   background: #fff;
   border-top: 1rpx solid #e5e7eb;
   box-sizing: border-box;
-  z-index: 11;
+  z-index: 1001;
 }
 
 .ai-input {

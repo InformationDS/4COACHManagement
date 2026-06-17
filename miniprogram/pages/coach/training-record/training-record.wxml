@@ -17,6 +17,7 @@
         <text class="info-label">日期</text>
         <text class="info-value">{{lesson.date}} {{lesson.start_time}}-{{lesson.end_time}}</text>
       </view>
+      <button class="ai-workbench-btn mt-16" bindtap="onOpenAiAssistant">在 AI 助手中处理这节课</button>
       <view wx:if="{{existingRecord}}" class="info-tip mt-8">✏️ 编辑已有训练记录</view>
     </view>
 

@@ -4,6 +4,7 @@ function getCardTheme(cardType) {
   const map = {
     [AI_CARD_TYPES.SCHEDULE_CONFIRM]: 'schedule',
     [AI_CARD_TYPES.TRAINING_RECORD_DRAFT]: 'training',
+    [AI_CARD_TYPES.TRAINING_RECORD_MODE_CHOICE]: 'training',
     [AI_CARD_TYPES.LESSON_UPDATE_CONFIRM]: 'schedule',
     [AI_CARD_TYPES.LESSON_CANCEL_CONFIRM]: 'warning',
     [AI_CARD_TYPES.STUDENT_NOTE_CONFIRM]: 'student',

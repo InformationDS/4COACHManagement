@@ -5,7 +5,8 @@ App({
     role: '',
     userInfo: null,
     ready: false,
-    pendingSchedule: null
+    pendingSchedule: null,
+    pendingAiRequest: null
   },
 
   onLaunch() {

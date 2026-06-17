@@ -198,6 +198,35 @@ Page({
     wx.switchTab({ url: '/pages/coach/lessons/lessons' });
   },
 
+  onAskAiStudent() {
+    const { studentId, student } = this.data;
+    if (!studentId) return;
+    getApp().globalData.pendingAiRequest = {
+      text: `分析一下${student.name || '这个学员'}最近的训练情况`,
+      sourceContext: {
+        source: 'student_detail',
+        intent: 'analyze_student',
+        student_id: studentId
+      }
+    };
+    wx.switchTab({ url: '/pages/coach/ai-assistant/ai-assistant' });
+  },
+
+  onAskAiNextPlan() {
+    const { studentId, student } = this.data;
+    if (!studentId) return;
+    getApp().globalData.pendingAiRequest = {
+      text: `给${student.name || '这个学员'}生成下次课建议`,
+      sourceContext: {
+        source: 'student_detail',
+        intent: 'analyze_student',
+        student_id: studentId,
+        request_type: 'next_plan'
+      }
+    };
+    wx.switchTab({ url: '/pages/coach/ai-assistant/ai-assistant' });
+  },
+
   noop() {},
 
   onRechargeInput(e) {

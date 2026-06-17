@@ -118,6 +118,22 @@
   margin-top: var(--space-sm);
 }
 
+.ai-action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-sm);
+}
+
+.ai-action-btn {
+  height: 76rpx;
+  padding: 0 16rpx;
+  border-radius: var(--td-radius-default);
+  background: var(--color-brand-light);
+  color: var(--color-brand);
+  font-size: 24rpx;
+  line-height: 76rpx;
+}
+
 /* ===== 课时变动记录 ===== */
 .section-title {
   font-size: var(--text-sm);

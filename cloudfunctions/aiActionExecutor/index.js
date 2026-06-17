@@ -18,6 +18,7 @@ exports.main = async (event = {}) => {
   const wxContext = cloud.getWXContext();
   const coachOpenid = wxContext.OPENID;
   const { confirmationId } = event;
+  const action = event.action || 'execute';
 
   if (!confirmationId) {
     return errorResult('缺少确认卡 ID');
@@ -38,6 +39,27 @@ exports.main = async (event = {}) => {
           });
         }
         return errorResult(check.message);
+      }
+
+      if (action === 'cancel') {
+        await transaction.collection('ai_confirmations').doc(confirmationId).update({
+          data: {
+            status: 'cancelled',
+            cancelled_at: new Date(),
+            updated_at: new Date()
+          }
+        });
+        return {
+          success: true,
+          action_type: confirmation.action_type,
+          target_type: 'ai_confirmation',
+          target_id: confirmationId,
+          message: '已取消本次确认。',
+          display_fields: [
+            { label: '确认卡', value: confirmation.title || confirmation.action_type || '' }
+          ],
+          target: { type: 'ai_confirmation', id: confirmationId }
+        };
       }
 
       if (FORBIDDEN_ACTIONS.has(confirmation.action_type)) {

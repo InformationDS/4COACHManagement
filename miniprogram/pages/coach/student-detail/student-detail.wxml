@@ -60,6 +60,14 @@
     </view>
 
     <view class="card" wx:if="{{isEdit}}">
+      <view class="card-header">AI 助手</view>
+      <view class="ai-action-grid">
+        <button class="ai-action-btn" bindtap="onAskAiStudent">问问 AI 这个学员</button>
+        <button class="ai-action-btn" bindtap="onAskAiNextPlan">生成下次课建议</button>
+      </view>
+    </view>
+
+    <view class="card" wx:if="{{isEdit}}">
       <view class="card-header flex-between">
         <text>近期课程</text>
         <text wx:if="{{recentLessons.length > 5}}" class="text-sm text-brand" bindtap="onToggleAllLessons">

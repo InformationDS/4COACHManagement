@@ -163,6 +163,18 @@
         <text class="detail-value text-muted">{{detailLesson.cancel_reason}}</text>
       </view>
 
+      <view class="detail-ai-action">
+        <t-button theme="default" variant="outline" size="medium" block bind:tap="onAskAiForLesson">AI 助手</t-button>
+        <t-button
+          wx:if="{{detailLesson.status==='pending' || detailLesson.status==='confirmed'}}"
+          theme="default"
+          variant="outline"
+          size="medium"
+          block
+          bind:tap="onAskAiUpdateLesson"
+        >AI 改课</t-button>
+      </view>
+
       <!-- 操作按钮 -->
       <view class="detail-actions" wx:if="{{detailLesson.status==='pending' || detailLesson.status==='confirmed'}}">
         <block wx:if="{{detailLesson.status==='pending'}}">

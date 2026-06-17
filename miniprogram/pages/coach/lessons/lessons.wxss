@@ -228,6 +228,10 @@
   gap: var(--space-sm);
 }
 
+.detail-ai-action {
+  margin-top: var(--space-lg);
+}
+
 /* ===== 取消原因弹窗 ===== */
 .cancel-dialog-body {
   padding: var(--space-sm) 0;

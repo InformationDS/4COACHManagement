@@ -259,6 +259,21 @@ Page({
     this.setData({ notes: e.detail.value });
   },
 
+  onOpenAiAssistant() {
+    const { lessonId, lesson } = this.data;
+    if (!lessonId) return;
+    getApp().globalData.pendingAiRequest = {
+      text: `帮我记录${lesson.student_name || '这个学员'}这节课的训练`,
+      sourceContext: {
+        source: 'training_record',
+        intent: 'create_training_record',
+        lesson_id: lessonId,
+        student_id: lesson.student_id || ''
+      }
+    };
+    wx.switchTab({ url: '/pages/coach/ai-assistant/ai-assistant' });
+  },
+
   // ===== 保存 =====
   async onSave() {
     const { lessonId, lesson, bodyParts, exercises, notes, rawText } = this.data;

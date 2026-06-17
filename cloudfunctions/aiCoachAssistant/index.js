@@ -1,4 +1,5 @@
 const cloud = require('wx-server-sdk');
+const modelAdapter = require('./lib/modelAdapter');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
 const db = cloud.database();
@@ -8,6 +9,7 @@ const RESPONSE_TYPES = {
   ANSWER: 'answer',
   FOLLOWUP: 'followup',
   CONFIRM_CARD: 'confirm_card',
+  CHOICE_CARD: 'choice_card',
   RESULT_CARD: 'result_card',
   REFUSAL: 'refusal',
   ERROR: 'error'
@@ -19,20 +21,27 @@ exports.main = async (event = {}) => {
   const startedAt = Date.now();
   const wxContext = cloud.getWXContext();
   const coachOpenid = wxContext.OPENID;
-  const text = normalizeText(event.text);
+  const action = event.action || 'message';
+  const rawText = normalizeText(event.text);
+  const sourceContext = event.sourceContext || {};
+  const previousInput = normalizeText(sourceContext.previous_input);
+  const text = previousInput ? `${previousInput} ${rawText}` : rawText;
 
   try {
+    if (action === 'status') {
+      return getStatusResponse();
+    }
+
     const auth = await requireCoach(coachOpenid);
     if (!auth.ok) {
       return errorResponse('当前版本仅支持已注册教练使用 AI 助手。');
     }
 
-    if (!text) {
+    if (!rawText) {
       return followupResponse('请告诉我你想查询、排课或记录什么。');
     }
 
     const clientDate = getClientDate(event.clientTime);
-    const sourceContext = event.sourceContext || {};
     const safety = detectSafety(text);
     let result;
 
@@ -43,23 +52,31 @@ exports.main = async (event = {}) => {
     } else if (safety.level === 'health_risk') {
       result = answerResponse('这类内容可能涉及健康风险。我可以帮你记录现象或提醒训练注意事项，但不能做医疗诊断。若出现疼痛、麻木、急性损伤或持续不适，建议先停止相关动作并寻求专业医疗意见。');
     } else {
-      const intent = classifyIntent(text, sourceContext);
+      const route = await classifyIntentWithModel(text, sourceContext, clientDate);
+      const intent = route.intent;
       result = await handleIntent({
         intent,
         text,
         coachOpenid,
         clientDate,
-        sourceContext
+        sourceContext: route.sourceContext,
+        event,
+        route
       });
+      result.route_model = route.model || getModelMode();
+      result.usage = result.usage || route.usage || {};
     }
 
-    await persistConversation(coachOpenid, text, result, sourceContext);
+    const silent = !!sourceContext.silent;
+    if (!silent) {
+      await persistConversation(coachOpenid, text, result, sourceContext);
+    }
     await logCall({
       coachOpenid,
-      requestType: 'message',
+      requestType: silent && result.intent === 'query_today_lessons' ? 'today_summary_auto' : 'message',
       inputLength: text.length,
       intent: result.intent || '',
-      model: 'rule-first-openai-compatible',
+      model: result.route_model || getModelMode(),
       success: result.success !== false,
       errorMessage: result.error || '',
       usage: result.usage || {},
@@ -74,7 +91,7 @@ exports.main = async (event = {}) => {
       requestType: 'message',
       inputLength: text.length,
       intent: '',
-      model: 'rule-first-openai-compatible',
+      model: getModelMode(),
       success: false,
       errorMessage: err.message || 'unknown',
       usage: {},
@@ -83,6 +100,25 @@ exports.main = async (event = {}) => {
     return errorResponse('AI 助手暂时不可用，传统日程、学员和训练记录页面仍可正常使用。', err.message);
   }
 };
+
+function getStatusResponse() {
+  const modelConfigured = modelAdapter.isConfigured();
+  return {
+    success: true,
+    aiAvailable: modelConfigured,
+    modelConfigured,
+    voiceAvailable: false,
+    modelMode: getModelMode(),
+    degradedReason: modelConfigured ? '' : 'LLM_API_KEY is not configured; using rule-based fallback',
+    message: modelConfigured
+      ? 'AI 文本能力已配置，语音转写暂未接入。'
+      : '模型未配置，当前使用规则降级能力；语音转写暂未接入。'
+  };
+}
+
+function getModelMode() {
+  return modelAdapter.isConfigured() ? 'cloud-function-openai-compatible' : 'rule-based-fallback';
+}
 
 async function requireCoach(openid) {
   if (!openid) return { ok: false };
@@ -157,15 +193,59 @@ function detectSafety(text) {
 
 function classifyIntent(text, sourceContext) {
   if (sourceContext && sourceContext.intent) return sourceContext.intent;
-  if (/(排课|安排.*课|约课|上一节课|加一节课)/.test(text)) return 'create_lesson';
-  if (/(记录.*训练|补.*训练记录|练胸|练背|练腿|练肩|训练内容|高位下拉|卧推|深蹲|硬拉)/.test(text)) return 'create_training_record';
+  if (/(取消.*课|取消课程)/.test(text)) return 'cancel_lesson';
+  if (/(改.*课|修改.*课|调整.*课|换.*时间|换.*地点|改到|调整到)/.test(text)) return 'update_lesson';
+  if (/(备注|更新.*备注|记一下)/.test(text)) return 'update_student_note';
+  if (/(排.*课|安排.*课|约.*课|上一节课|加一节课|明天.*课|后天.*课)/.test(text)) return 'create_lesson';
+  if (/(记录.*训练|补.*训练记录|训练记录|记录.*练|练胸|练背|练腿|练肩|训练内容|高位下拉|卧推|深蹲|硬拉)/.test(text)) return 'create_training_record';
   if (/(未写|没写|补训练记录|缺训练记录)/.test(text)) return 'missing_training_records';
   if (/(低课时|快没课|剩余.*课|课时偏低)/.test(text)) return 'low_balance_students';
   if (/(本周|这周|本月|这个月|运营|复盘|总结.*工作)/.test(text)) return 'operation_review';
   if (/(最近.*练|练得怎么样|训练情况|下次课建议)/.test(text)) return 'analyze_student';
-  if (/(今天|今日|下一节|下午|上午|日程|还有几节课)/.test(text)) return 'query_today_lessons';
+  if (/(今天|今日|下一节|日程|还有几节课)/.test(text)) return 'query_today_lessons';
   if (/(学员|剩多少课|剩余课时)/.test(text)) return 'query_student';
-  return 'query_today_lessons';
+  return 'unknown';
+}
+
+async function classifyIntentWithModel(text, sourceContext, clientDate) {
+  const fallbackIntent = classifyIntent(text, sourceContext);
+  if (!modelAdapter.isConfigured()) {
+    return {
+      intent: fallbackIntent,
+      sourceContext,
+      model: 'rule-based-intent',
+      confidence: 0
+    };
+  }
+  try {
+    const res = await modelAdapter.classifyCoachIntent({ text, sourceContext, clientDate });
+    if (res.ok && res.data && res.data.confidence >= 0.55 && res.data.intent !== 'unknown') {
+      return {
+        intent: res.data.intent,
+        sourceContext: {
+          ...(sourceContext || {}),
+          ai_slots: res.data.slots || {},
+          ai_route: {
+            intent: res.data.intent,
+            confidence: res.data.confidence,
+            missing_slots: res.data.missing_slots || [],
+            reason: res.data.reason || ''
+          }
+        },
+        model: res.model || getModelMode(),
+        confidence: res.data.confidence,
+        usage: res.usage || {}
+      };
+    }
+  } catch (err) {
+    console.warn('intent model fallback:', err.message);
+  }
+  return {
+    intent: fallbackIntent,
+    sourceContext,
+    model: 'rule-based-intent-fallback',
+    confidence: 0
+  };
 }
 
 async function handleIntent(ctx) {
@@ -177,8 +257,11 @@ async function handleIntent(ctx) {
   if (intent === 'query_student') return getStudentAnswer(ctx);
   if (intent === 'analyze_student') return getStudentAnalysis(ctx);
   if (intent === 'create_lesson') return prepareCreateLesson(ctx);
+  if (intent === 'update_lesson') return prepareUpdateLesson(ctx);
   if (intent === 'create_training_record') return prepareTrainingRecord(ctx);
-  return getTodayAnswer(ctx);
+  if (intent === 'cancel_lesson') return prepareCancelLesson(ctx);
+  if (intent === 'update_student_note') return prepareStudentNoteUpdate(ctx);
+  return followupResponse('我还没理解你要处理什么。你可以说“查看今天日程”、“给张三明天下午3点排一节课”，或“记录张三今天练背，高位下拉4组12次”。', { intent: 'unknown' });
 }
 
 async function getTodayAnswer({ coachOpenid, clientDate }) {
@@ -264,8 +347,8 @@ async function getOperationReview({ coachOpenid, clientDate, text }) {
   });
 }
 
-async function getStudentAnswer({ coachOpenid, text }) {
-  const candidates = await findStudentsByText(coachOpenid, text);
+async function getStudentAnswer({ coachOpenid, text, sourceContext }) {
+  const candidates = await findStudentsByContextOrText(coachOpenid, sourceContext, text);
   if (!candidates.length) return followupResponse('你想查询哪位学员？请补充学员姓名。', { intent: 'query_student' });
   if (candidates.length > 1) return disambiguationResponse(candidates, '找到多名匹配学员，请补充更完整的姓名。', 'query_student');
   const s = candidates[0];
@@ -285,8 +368,8 @@ async function getStudentAnswer({ coachOpenid, text }) {
   });
 }
 
-async function getStudentAnalysis({ coachOpenid, text }) {
-  const candidates = await findStudentsByText(coachOpenid, text);
+async function getStudentAnalysis({ coachOpenid, text, sourceContext }) {
+  const candidates = await findStudentsByContextOrText(coachOpenid, sourceContext, text);
   if (!candidates.length) return followupResponse('你想分析哪位学员？请补充学员姓名。', { intent: 'analyze_student' });
   if (candidates.length > 1) return disambiguationResponse(candidates, '找到多名匹配学员，请补充更完整的姓名。', 'analyze_student');
   const student = candidates[0];
@@ -325,8 +408,8 @@ async function getStudentAnalysis({ coachOpenid, text }) {
   });
 }
 
-async function prepareCreateLesson({ coachOpenid, text, clientDate }) {
-  const candidates = await findStudentsByText(coachOpenid, text);
+async function prepareCreateLesson({ coachOpenid, text, clientDate, sourceContext }) {
+  const candidates = await findStudentsByContextOrText(coachOpenid, sourceContext, text);
   if (!candidates.length) return followupResponse('要给哪位学员排课？请补充学员姓名。', { intent: 'create_lesson' });
   if (candidates.length > 1) return disambiguationResponse(candidates, '找到多名匹配学员，请补充更完整的姓名后再排课。', 'create_lesson');
   const student = candidates[0];
@@ -379,7 +462,7 @@ async function prepareTrainingRecord({ coachOpenid, text, clientDate, sourceCont
   if (sourceContext && sourceContext.lesson_id) {
     lesson = await getOwnedLesson(coachOpenid, sourceContext.lesson_id);
   }
-  const candidates = lesson ? [] : await findStudentsByText(coachOpenid, text);
+  const candidates = lesson ? [] : await findStudentsByContextOrText(coachOpenid, sourceContext, text);
   let student = lesson ? { _id: lesson.student_id, name: lesson.student_name } : null;
   if (!lesson) {
     if (!candidates.length) return followupResponse('要记录哪位学员的训练？请补充学员姓名。', { intent: 'create_training_record' });
@@ -390,22 +473,65 @@ async function prepareTrainingRecord({ coachOpenid, text, clientDate, sourceCont
   if (!lesson) {
     return followupResponse('没有找到可关联的课程。请先排课，或从具体课程卡片进入训练记录。', { intent: 'create_training_record' });
   }
-  const parsed = parseTrainingText(text);
+  const parsed = await parseTrainingTextWithModel(text);
   if (!parsed.body_parts.length && !parsed.exercises.length && !parsed.notes) {
     return followupResponse('我还没有识别出训练部位或动作。请补充类似“练背，高位下拉4组12次”。', { intent: 'create_training_record' });
   }
   const existing = await getTrainingRecordByLesson(coachOpenid, lesson._id);
+  const selectedMode = sourceContext && sourceContext.training_record_mode;
+  if (existing && selectedMode !== 'overwrite' && selectedMode !== 'append') {
+    return choiceCardResponse('这节课已有训练记录，请先选择保存方式。', {
+      card_type: 'training_record_mode_choice_card',
+      title: '选择训练记录保存方式',
+      summary: `${student.name || lesson.student_name || '学员'} ${lesson.date || clientDate} 已有训练记录`,
+      display_fields: [
+        { label: '学员', value: student.name || lesson.student_name || '' },
+        { label: '课程', value: `${lesson.date || ''} ${lesson.start_time || ''}` },
+        { label: '已有记录', value: existing._id || '已存在' },
+        { label: '新内容', value: parsed.body_parts.join('、') || parsed.notes || '待保存内容' }
+      ],
+      options: [
+        {
+          id: 'overwrite',
+          label: '覆盖原记录',
+          text,
+          source_context: {
+            ...(sourceContext || {}),
+            source: 'training_record_mode_choice',
+            intent: 'create_training_record',
+            lesson_id: lesson._id,
+            student_id: lesson.student_id,
+            training_record_mode: 'overwrite'
+          }
+        },
+        {
+          id: 'append',
+          label: '追加到原记录',
+          text,
+          source_context: {
+            ...(sourceContext || {}),
+            source: 'training_record_mode_choice',
+            intent: 'create_training_record',
+            lesson_id: lesson._id,
+            student_id: lesson.student_id,
+            training_record_mode: 'append'
+          }
+        }
+      ]
+    }, 'create_training_record');
+  }
+  const actionType = existing && selectedMode === 'append' ? 'append_training_record' : 'save_training_record';
   const confirmation = await createConfirmation({
     coachOpenid,
-    actionType: existing ? 'append_training_record' : 'save_training_record',
-    title: existing ? '确认追加训练记录' : '确认保存训练记录',
+    actionType,
+    title: actionType === 'append_training_record' ? '确认追加训练记录' : '确认保存训练记录',
     summary: `${student.name || lesson.student_name || '学员'} ${lesson.date || clientDate} 的训练记录`,
     displayFields: [
       { label: '学员', value: student.name || lesson.student_name || '' },
       { label: '课程', value: `${lesson.date || ''} ${lesson.start_time || ''}` },
       { label: '训练部位', value: parsed.body_parts.join('、') || '未识别' },
       { label: '动作数', value: parsed.exercises.length },
-      { label: '保存方式', value: existing ? '追加到已有记录' : '新建记录' }
+      { label: '保存方式', value: actionType === 'append_training_record' ? '追加到已有记录' : (existing ? '覆盖原记录' : '新建记录') }
     ],
     payload: {
       lesson_id: lesson._id,
@@ -423,6 +549,132 @@ async function prepareTrainingRecord({ coachOpenid, text, clientDate, sourceCont
     sourceTranscript: sourceContext && sourceContext.source_transcript ? sourceContext.source_transcript : ''
   });
   return confirmCardResponse('已整理训练记录确认卡。请核对后再保存。', confirmation, 'training_record_draft_card', confirmation.action_type);
+}
+
+async function prepareUpdateLesson({ coachOpenid, text, clientDate, sourceContext }) {
+  if (!sourceContext || !sourceContext.lesson_id) {
+    return followupResponse('请从具体课程卡片进入 AI 后再修改课程时间或地点。', { intent: 'update_lesson' });
+  }
+  const lesson = await getOwnedLesson(coachOpenid, sourceContext.lesson_id);
+  if (!lesson) return refusalResponse('没有找到这节课，或它不属于当前教练。', { intent: 'update_lesson' });
+  if (lesson.status !== 'pending' && lesson.status !== 'confirmed') {
+    return refusalResponse('只有待上课程可以通过 AI 生成修改确认卡。', { intent: 'update_lesson' });
+  }
+
+  const settings = await getCoachSettings(coachOpenid);
+  const slots = parseScheduleSlots(text, clientDate, settings, {
+    location_preference: lesson.location || ''
+  });
+  const nextDate = slots.date || lesson.date || clientDate;
+  const nextStart = slots.start_time || lesson.start_time || '';
+  const nextEnd = slots.start_time ? slots.end_time : (lesson.end_time || '');
+  const nextLocation = slots.location || lesson.location || '';
+
+  if (!nextStart || !nextEnd) {
+    return followupResponse('请补充新的上课时间，例如“改到明天下午 3 点”。', { intent: 'update_lesson' });
+  }
+  const changed = nextDate !== (lesson.date || '')
+    || nextStart !== (lesson.start_time || '')
+    || nextEnd !== (lesson.end_time || '')
+    || nextLocation !== (lesson.location || '');
+  if (!changed) {
+    return followupResponse('没有识别到需要修改的时间或地点，请补充更明确的调整内容。', { intent: 'update_lesson' });
+  }
+
+  const conflicts = await findLessonConflicts(coachOpenid, nextDate, nextStart, nextEnd, lesson._id);
+  if (conflicts.length) {
+    return refusalResponse(`修改后的时间段与已有课程冲突：${conflicts.map(l => `${l.start_time}-${l.end_time} ${l.student_name || ''}`).join('、')}。`, { intent: 'update_lesson' });
+  }
+
+  const confirmation = await createConfirmation({
+    coachOpenid,
+    actionType: 'update_lesson',
+    title: '确认修改课程',
+    summary: `修改 ${lesson.student_name || '学员'} 的课程安排`,
+    displayFields: [
+      { label: '学员', value: lesson.student_name || '' },
+      { label: '原时间', value: `${lesson.date || ''} ${lesson.start_time || ''}-${lesson.end_time || ''}` },
+      { label: '新时间', value: `${nextDate} ${nextStart}-${nextEnd}` },
+      { label: '地点', value: nextLocation || '未指定' }
+    ],
+    payload: {
+      lesson_id: lesson._id,
+      date: nextDate,
+      start_time: nextStart,
+      end_time: nextEnd,
+      location: nextLocation
+    },
+    validationSnapshot: {
+      previous_date: lesson.date || '',
+      previous_start_time: lesson.start_time || '',
+      previous_end_time: lesson.end_time || '',
+      previous_location: lesson.location || '',
+      conflict_count: conflicts.length,
+      lesson_status: lesson.status || ''
+    },
+    sourceInput: text
+  });
+  return confirmCardResponse('已生成改课确认卡。请核对后再执行。', confirmation, 'lesson_update_confirm_card', 'update_lesson');
+}
+
+async function prepareCancelLesson({ coachOpenid, text, sourceContext }) {
+  if (!sourceContext || !sourceContext.lesson_id) {
+    return followupResponse('要取消哪一节课？请从具体课程卡片进入 AI，或补充明确课程信息。', { intent: 'cancel_lesson' });
+  }
+  const lesson = await getOwnedLesson(coachOpenid, sourceContext.lesson_id);
+  if (!lesson) return refusalResponse('没有找到这节课，或它不属于当前教练。', { intent: 'cancel_lesson' });
+  if (lesson.status !== 'pending' && lesson.status !== 'confirmed') {
+    return refusalResponse('只有待确认或已确认的待上课程可以通过 AI 生成取消确认卡。', { intent: 'cancel_lesson' });
+  }
+  const reason = extractNoteText(text) || 'AI 确认卡取消';
+  const confirmation = await createConfirmation({
+    coachOpenid,
+    actionType: 'cancel_lesson',
+    title: '确认取消课程',
+    summary: `取消 ${lesson.student_name || '学员'} ${lesson.date || ''} ${lesson.start_time || ''} 的课程`,
+    displayFields: [
+      { label: '学员', value: lesson.student_name || '' },
+      { label: '时间', value: `${lesson.date || ''} ${lesson.start_time || ''}-${lesson.end_time || ''}` },
+      { label: '原因', value: reason }
+    ],
+    payload: {
+      lesson_id: lesson._id,
+      cancel_reason: reason
+    },
+    validationSnapshot: {
+      lesson_status: lesson.status || ''
+    },
+    sourceInput: text
+  });
+  return confirmCardResponse('已生成取消课程确认卡。请核对后再执行。', confirmation, 'lesson_cancel_confirm_card', 'cancel_lesson');
+}
+
+async function prepareStudentNoteUpdate({ coachOpenid, text, sourceContext }) {
+  const candidates = await findStudentsByContextOrText(coachOpenid, sourceContext, text);
+  if (!candidates.length) return followupResponse('要更新哪位学员的备注？请补充学员姓名。', { intent: 'update_student_note' });
+  if (candidates.length > 1) return disambiguationResponse(candidates, '找到多名匹配学员，请补充更完整的姓名。', 'update_student_note');
+  const student = candidates[0];
+  const note = extractNoteText(text);
+  if (!note) return followupResponse('请补充要写入备注的具体内容。', { intent: 'update_student_note' });
+  const confirmation = await createConfirmation({
+    coachOpenid,
+    actionType: 'update_student_note',
+    title: '确认更新学员备注',
+    summary: `更新 ${student.name || '学员'} 的备注`,
+    displayFields: [
+      { label: '学员', value: student.name || '' },
+      { label: '备注', value: note }
+    ],
+    payload: {
+      student_id: student._id,
+      notes: note
+    },
+    validationSnapshot: {
+      previous_note_length: String(student.notes || '').length
+    },
+    sourceInput: text
+  });
+  return confirmCardResponse('已生成学员备注确认卡。请核对后再保存。', confirmation, 'student_note_confirm_card', 'update_student_note');
 }
 
 function parseScheduleSlots(text, clientDate, settings, student) {
@@ -513,6 +765,24 @@ function parseTrainingText(text) {
   };
 }
 
+async function parseTrainingTextWithModel(text) {
+  const fallback = parseTrainingText(text);
+  if (!modelAdapter.isConfigured()) return fallback;
+  try {
+    const modelRes = await modelAdapter.parseTrainingRecord(text);
+    if (modelRes.ok && modelRes.data) {
+      return {
+        body_parts: modelRes.data.body_parts.length ? modelRes.data.body_parts : fallback.body_parts,
+        exercises: modelRes.data.exercises.length ? modelRes.data.exercises : fallback.exercises,
+        notes: modelRes.data.notes || fallback.notes
+      };
+    }
+  } catch (err) {
+    console.warn('model parse fallback:', err.message);
+  }
+  return fallback;
+}
+
 async function findStudentsByText(coachOpenid, text) {
   const all = await getStudents(coachOpenid);
   const cleanText = text.replace(/\s+/g, '');
@@ -524,10 +794,44 @@ async function findStudentsByText(coachOpenid, text) {
   return all.filter(s => s.name && s.name.includes(nameGuess));
 }
 
+async function findStudentsByContextOrText(coachOpenid, sourceContext, text) {
+  if (sourceContext && sourceContext.student_id) {
+    const res = await db.collection('students').doc(sourceContext.student_id).get();
+    const student = res.data;
+    if (student && student.coach_openid === coachOpenid) return [student];
+    return [];
+  }
+  const slotName = sourceContext && sourceContext.ai_slots && sourceContext.ai_slots.student_name;
+  if (slotName) {
+    const all = await getStudents(coachOpenid);
+    const cleanSlot = String(slotName).replace(/\s+/g, '');
+    const matched = all.filter(s => s.name && String(s.name).replace(/\s+/g, '').includes(cleanSlot));
+    if (matched.length) return matched;
+  }
+  return findStudentsByText(coachOpenid, text);
+}
+
+function extractNoteText(text) {
+  const patterns = [
+    /备注[为是:]?(.+)$/,
+    /记一下(.+)$/,
+    /记录一下(.+)$/,
+    /原因[为是:]?(.+)$/,
+    /取消.*课[，, ]*(.+)$/
+  ];
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match && match[1]) return match[1].trim();
+  }
+  return '';
+}
+
 function guessName(text) {
-  const match = text.match(/(?:给|记录|查询|分析|问问|帮我看)([\u4e00-\u9fa5A-Za-z]{2,8})/);
+  const match = text.match(/(?:给|记录|查询|分析|问问|帮我看|帮我补)?([\u4e00-\u9fa5A-Za-z0-9]{1,12})(?:今天|明天|后天|最近|这节课|的|练|排课|训练|怎么样|$)/);
   if (!match) return '';
-  return match[1].replace(/(今天|明天|后天|最近|训练|排课|练得|的)$/g, '');
+  return match[1]
+    .replace(/^(某个|哪个|哪位|学员|这位|帮我|记录|查询|分析|问问|看一下)/g, '')
+    .replace(/(今天|明天|后天|最近|训练|排课|练得|的)$/g, '');
 }
 
 async function getStudents(coachOpenid) {
@@ -609,10 +913,11 @@ async function getLowBalanceStudents(coachOpenid, threshold) {
   return res.data || [];
 }
 
-async function findLessonConflicts(coachOpenid, date, startTime, endTime) {
+async function findLessonConflicts(coachOpenid, date, startTime, endTime, excludeLessonId = '') {
   const lessons = await getLessonsByRange(coachOpenid, date, date);
   return lessons.filter(l => {
     if (l.status === 'cancelled') return false;
+    if (excludeLessonId && l._id === excludeLessonId) return false;
     return startTime < (l.end_time || l.start_time) && endTime > (l.start_time || l.end_time);
   });
 }
@@ -708,6 +1013,17 @@ function confirmCardResponse(text, confirmation, cardType, actionType) {
       display_fields: confirmation.display_fields,
       expires_at: confirmation.expires_at
     }
+  };
+}
+
+function choiceCardResponse(text, card, intent) {
+  return {
+    success: true,
+    messageId: `ai_msg_${Date.now()}`,
+    type: RESPONSE_TYPES.CHOICE_CARD,
+    intent,
+    text,
+    card
   };
 }
 
