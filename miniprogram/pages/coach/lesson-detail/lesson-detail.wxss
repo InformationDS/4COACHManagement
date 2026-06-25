@@ -1,0 +1,20 @@
+.title {
+  font-size: 38rpx;
+  font-weight: 700;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid #eef0f3;
+}
+
+.notes {
+  margin-top: 16rpx;
+  color: #6b7280;
+}
+
+.actions button {
+  margin-bottom: 16rpx;
+}

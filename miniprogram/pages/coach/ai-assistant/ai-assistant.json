@@ -1,4 +1,6 @@
 {
   "navigationBarTitleText": "AI助手",
-  "enablePullDownRefresh": true
+  "usingComponents": {
+    "ai-card-renderer": "/components/ai-card-renderer/index"
+  }
 }

@@ -1,0 +1,42 @@
+<view wx:if="{{card}}" class="confirm-card">
+  <view class="card-head">
+    <text class="card-title">{{card.title || '确认操作'}}</text>
+    <text class="card-badge">{{card.status || 'pending'}}</text>
+  </view>
+  <view wx:if="{{card.summary}}" class="summary">{{card.summary}}</view>
+  <view class="fields">
+    <block wx:if="{{card.cardType !== 'schedule_confirm_card'}}">
+      <block wx:for="{{card.display_fields}}" wx:key="label">
+        <view class="field-row">
+          <text class="field-label">{{item.label}}</text>
+          <text class="field-value">{{item.value}}</text>
+        </view>
+      </block>
+    </block>
+    <block wx:if="{{card.cardType === 'schedule_confirm_card'}}">
+      <view class="field-row"><text class="field-label">学员</text><text class="field-value">{{card.display_fields[0].value}}</text></view>
+      <view class="edit-row">
+        <text class="field-label">日期</text>
+        <picker mode="date" value="{{draft.date}}" bindchange="onDateChange"><view class="edit-control">{{draft.date}}</view></picker>
+      </view>
+      <view class="edit-row">
+        <text class="field-label">开始</text>
+        <picker mode="time" value="{{draft.start_time}}" bindchange="onStartChange"><view class="edit-control">{{draft.start_time}}</view></picker>
+      </view>
+      <view class="edit-row">
+        <text class="field-label">结束</text>
+        <picker mode="time" value="{{draft.end_time}}" bindchange="onEndChange"><view class="edit-control">{{draft.end_time}}</view></picker>
+      </view>
+      <view class="edit-row">
+        <text class="field-label">地点</text>
+        <input class="edit-input" value="{{draft.location}}" bindinput="onLocationInput" placeholder="填写上课地点" />
+      </view>
+      <view class="field-row"><text class="field-label">消耗课时</text><text class="field-value">{{lessonUnits}}</text></view>
+    </block>
+  </view>
+  <view wx:if="{{card.warning}}" class="warning">{{card.warning}}</view>
+  <view class="actions">
+    <button class="ghost" size="mini" bindtap="onCancel">取消</button>
+    <button class="primary" size="mini" disabled="{{disabled}}" bindtap="onConfirm">确认</button>
+  </view>
+</view>

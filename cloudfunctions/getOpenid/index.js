@@ -1,11 +1,13 @@
-// cloudfunctions/getOpenid/index.js
-// 获取当前用户的 openid
+const cloud = require("wx-server-sdk");
 
-const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
-exports.main = async (event, context) => {
+exports.main = async () => {
+  const { OPENID, APPID, UNIONID } = cloud.getWXContext();
   return {
-    openid: cloud.getWXContext().OPENID
+    success: true,
+    openid: OPENID,
+    appid: APPID,
+    unionid: UNIONID || null
   };
 };

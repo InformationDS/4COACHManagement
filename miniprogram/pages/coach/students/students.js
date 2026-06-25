@@ -1,100 +1,43 @@
-// pages/coach/students/students.js
-const { getStudents } = require('../../../utils/api');
-const { formatDate } = require('../../../utils/date');
+const api = require("../../../utils/api");
+
+function setTab(page) {
+  if (typeof page.getTabBar === "function" && page.getTabBar()) {
+    page.getTabBar().setData({ selected: 2 });
+  }
+}
 
 Page({
   data: {
+    keyword: "",
     students: [],
-    keyword: '',
-    loading: true,
-    searchTimer: null
+    loading: false
   },
 
   onShow() {
-    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setSelected(2);
-    }
-    this.loadStudents();
+    setTab(this);
+    this.load();
   },
 
-  /**
-   * 加载学员列表
-   */
-  async loadStudents() {
+  onSearch(event) {
+    this.setData({ keyword: event.detail.value });
+    this.load();
+  },
+
+  load() {
     this.setData({ loading: true });
-    try {
-      const keyword = this.data.keyword.trim();
-      const students = await getStudents(keyword);
-      // 格式化日期
-      const formatted = students.map(s => {
-        const remaining = Number(s.remaining_lessons || 0);
-        return {
-          ...s,
-          last_lesson_date: s.last_lesson_date ? formatDate(s.last_lesson_date) : '',
-          balanceStatus: remaining <= 0 ? 'empty' : remaining <= 2 ? 'low' : 'normal',
-          balanceLabel: remaining <= 0 ? '待充值' : remaining <= 2 ? '课时偏低' : ''
-        };
+    api.getStudents(this.data.keyword)
+      .then((res) => this.setData({ students: res.data || [], loading: false }))
+      .catch((err) => {
+        this.setData({ loading: false });
+        api.toastError(err);
       });
-      this.setData({ students: formatted, loading: false });
-    } catch (err) {
-      console.error('加载学员列表失败:', err);
-      wx.showToast({ title: '加载失败', icon: 'none' });
-      this.setData({ loading: false });
-    }
   },
 
-  /**
-   * 搜索输入（防抖）
-   */
-  onSearchInput(e) {
-    const keyword = e.detail.value;
-    this.setData({ keyword });
-    if (this.data.searchTimer) clearTimeout(this.data.searchTimer);
-    this.data.searchTimer = setTimeout(() => {
-      this.loadStudents();
-    }, 300);
+  addStudent() {
+    wx.navigateTo({ url: "/pages/coach/student-detail/student-detail" });
   },
 
-  /**
-   * TDesign Search 组件 change 事件
-   */
-  onSearchChange(e) {
-    this.onSearchInput(e);
-  },
-
-  /**
-   * TDesign Search 组件 submit 事件
-   */
-  onSearchSubmit(e) {
-    const keyword = e.detail.value;
-    this.setData({ keyword });
-    this.loadStudents();
-  },
-
-  /**
-   * 清除搜索
-   */
-  onClearSearch() {
-    this.setData({ keyword: '' });
-    this.loadStudents();
-  },
-
-  /**
-   * 点击学员卡片 → 进入详情
-   */
-  onTapStudent(e) {
-    const id = e.currentTarget.dataset.id;
-    wx.navigateTo({
-      url: `/pages/coach/student-detail/student-detail?id=${id}`
-    });
-  },
-
-  /**
-   * 添加新学员
-   */
-  onAddStudent() {
-    wx.navigateTo({
-      url: '/pages/coach/student-detail/student-detail'
-    });
+  openStudent(event) {
+    wx.navigateTo({ url: `/pages/coach/student-detail/student-detail?id=${event.currentTarget.dataset.id}` });
   }
 });

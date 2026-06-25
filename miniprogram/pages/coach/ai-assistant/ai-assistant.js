@@ -1,330 +1,272 @@
-const { QUICK_ACTIONS, AI_RESPONSE_TYPES } = require('../../../utils/aiConstants');
-const { getCardTheme, getConfirmButtonText, normalizeFields, buildRoute } = require('../../../utils/aiCards');
-const {
-  sendAiMessage,
-  executeAiAction,
-  cancelAiAction,
-  getAiTodaySummary,
-  getAiStatus,
-  formatLocalDate
-} = require('../../../utils/aiApi');
+const aiApi = require("../../../utils/aiApi");
+const api = require("../../../utils/api");
 
-function createMessage(role, type, text, card) {
-  return {
-    id: `msg_${Date.now()}_${Math.random().toString(16).slice(2)}`,
-    role,
-    type,
-    text: text || '',
-    card: card || null,
-    created_at: Date.now(),
-    status: 'done'
-  };
-}
-
-function isSameText(a, b) {
-  const left = String(a || '').replace(/\s+/g, '');
-  const right = String(b || '').replace(/\s+/g, '');
-  return !!left && left === right;
-}
-
-function shouldUsePendingContext(text, pendingContext) {
-  if (!pendingContext || !pendingContext.intent) return false;
-  const value = String(text || '');
-  if (pendingContext.intent === 'create_lesson') {
-    return !/(今天|今日|日程|记录|训练|低课时|未写|缺记录|复盘|取消|备注)/.test(value);
+function tabbar(page, selected) {
+  if (typeof page.getTabBar === "function" && page.getTabBar()) {
+    page.getTabBar().setData({ selected });
   }
-  if (pendingContext.intent === 'create_training_record') {
-    return !/(今天.*课|今日.*课|日程|排.*课|约.*课|安排.*课|低课时|未写|缺记录|复盘|取消|备注|最近.*练|练得怎么样|训练情况|分析|查询|某个学员|哪位学员)/.test(value);
-  }
-  return value.replace(/\s+/g, '').length <= 16;
 }
+
+let recordManager = null;
 
 Page({
   data: {
-    today: formatLocalDate(new Date()),
-    loadingSummary: true,
-    sending: false,
-    executingId: '',
-    inputText: '',
-    pendingContext: null,
-    quickActions: QUICK_ACTIONS,
-    messages: [],
-    summary: {
-      total: 0,
-      remaining: 0,
-      completed: 0,
-      missingRecords: 0,
-      lowBalance: 0,
-      nextText: '暂无待上课程'
+    today: {
+      todayLessonCount: 0,
+      nextLesson: null,
+      pendingSummaryCount: 0
     },
-    aiStatus: {
-      aiAvailable: false,
-      modelConfigured: false,
-      voiceAvailable: false,
-      degradedReason: '',
-      message: ''
-    }
+    messages: [
+      {
+        id: "welcome",
+        role: "assistant",
+        type: "answer",
+        text: "你可以直接说：记录刚才这节课的训练内容，或安排下一节课。",
+        created_at: Date.now()
+      }
+    ],
+    inputText: "",
+    sending: false,
+    voiceState: "idle",
+    voiceHint: "",
+    scrollIntoView: "",
+    quickActions: [
+      { text: "记录训练", prompt: "我要记录刚才这节课的训练内容" },
+      { text: "安排课程", prompt: "给学员安排一节课" },
+      { text: "查今日课表", prompt: "我今天有哪些课？" },
+      { text: "分析学员", prompt: "帮我看一个学员的基础情况" }
+    ]
+  },
+
+  onLoad(options) {
+    this.sourceContext = {
+      source: options.source || "ai_home",
+      student_id: options.student_id || "",
+      lesson_id: options.lesson_id || ""
+    };
+    this.setupVoice();
+    this.loadToday();
+    this.loadPendingConfirmations();
+  },
+
+  appendMessage(message) {
+    const messages = this.data.messages.concat(message);
+    this.setData({
+      messages,
+      scrollIntoView: `msg-${messages.length - 1}`
+    });
   },
 
   onShow() {
-    if (typeof this.getTabBar === 'function' && this.getTabBar()) {
-      this.getTabBar().setSelected(0);
-    }
-    this.loadStatus();
-    this.loadTodaySummary();
-    this.consumePendingAiRequest();
-  },
-
-  onPullDownRefresh() {
-    Promise.all([this.loadStatus(), this.loadTodaySummary()])
-      .finally(() => wx.stopPullDownRefresh());
-  },
-
-  async loadStatus() {
-    const status = await getAiStatus();
-    this.setData({ aiStatus: status });
-  },
-
-  async loadTodaySummary() {
-    this.setData({ loadingSummary: true });
-    try {
-      const res = await getAiTodaySummary();
-      if (res && res.success) {
-        this.setData({
-          summary: {
-            ...this.data.summary,
-            ...(res.summary || {})
-          }
-        });
-      }
-    } catch (err) {
-      if (this.data.messages.length === 0) {
-        this.setData({
-          messages: [
-            createMessage(
-              'system',
-              AI_RESPONSE_TYPES.ERROR,
-              'AI 今日摘要暂时不可用，日程、学员和训练记录页面仍可正常使用。'
-            )
-          ]
-        });
-      }
-    } finally {
-      this.setData({ loadingSummary: false });
-    }
-  },
-
-  onInput(e) {
-    this.setData({ inputText: e.detail.value });
-  },
-
-  onQuickAction(e) {
-    const prompt = e.currentTarget.dataset.prompt;
-    if (!prompt || this.data.sending) return;
-    this.setData({ inputText: prompt });
-    this.sendText(prompt, {
-      source: 'ai_home_quick_action',
-      quick_action: e.currentTarget.dataset.id || ''
-    });
-  },
-
-  consumePendingAiRequest() {
+    tabbar(this, 0);
     const app = getApp();
-    const pending = app.globalData.pendingAiRequest;
-    if (!pending || !pending.text) return;
-    app.globalData.pendingAiRequest = null;
-    this.setData({ inputText: pending.text });
-    this.sendText(pending.text, pending.sourceContext || {});
-  },
-
-  onVoiceTap() {
-    wx.showModal({
-      title: '语音暂未接入',
-      content: '第一轮先跑通文本 AI 工作台。语音转写接入后，会把转写文本送入同一套确认卡流程。',
-      showCancel: false
-    });
-  },
-
-  async onSend() {
-    const text = this.data.inputText.trim();
-    await this.sendText(text, { source: 'ai_home' });
-  },
-
-  async sendText(text, sourceContext) {
-    if (!text || this.data.sending) return;
-
-    const pendingContext = this.data.pendingContext;
-    const effectiveSourceContext = {
-      ...(sourceContext || { source: 'ai_home' })
-    };
-    if (shouldUsePendingContext(text, pendingContext) && !effectiveSourceContext.intent) {
-      Object.assign(effectiveSourceContext, pendingContext);
-      effectiveSourceContext.previous_input = pendingContext.previous_input;
-      effectiveSourceContext.source = 'ai_home_followup';
-    }
-
-    const userMessage = createMessage('user', 'text', text);
-    this.setData({
-      messages: [...this.data.messages, userMessage],
-      inputText: '',
-      sending: true
-    });
-
-    try {
-      const res = await sendAiMessage({
-        text,
-        sourceContext: effectiveSourceContext
-      });
-      const assistantMessage = this._normalizeAssistantMessage(res);
-      const nextData = {
-        messages: [...this.data.messages, assistantMessage],
-        pendingContext: this._buildPendingContext(res, text, effectiveSourceContext)
-      };
-      if (res && res.summary) {
-        nextData.summary = { ...this.data.summary, ...res.summary };
+    if (app.globalData && app.globalData.pendingAiSourceContext) {
+      this.sourceContext = app.globalData.pendingAiSourceContext;
+      app.globalData.pendingAiSourceContext = null;
+      if (this.sourceContext.lesson_label) {
+        this.setData({
+          scrollIntoView: `msg-${this.data.messages.length}`,
+          messages: this.data.messages.concat({
+            id: `ctx_${Date.now()}`,
+            role: "assistant",
+            type: "answer",
+            text: `正在为${this.sourceContext.lesson_label}处理，请说课后实际情况或训练方案要求。`,
+            created_at: Date.now()
+          })
+        });
       }
-      this.setData(nextData);
-    } catch (err) {
-      this.setData({
-        messages: [
-          ...this.data.messages,
-          createMessage('assistant', AI_RESPONSE_TYPES.ERROR, 'AI 请求失败，请稍后重试，或回到传统页面手动处理。')
-        ]
-      });
-    } finally {
-      this.setData({ sending: false });
     }
   },
 
-  _normalizeAssistantMessage(res) {
-    if (!res || !res.success) {
-      return createMessage('assistant', AI_RESPONSE_TYPES.ERROR, (res && res.error) || 'AI 未返回有效结果。');
-    }
-    const card = res.card ? this._normalizeCard(res.card) : null;
-    const text = card && isSameText(res.text, card.summary) ? '' : res.text;
-    return createMessage('assistant', res.type || AI_RESPONSE_TYPES.ANSWER, text, card);
-  },
-
-  _normalizeCard(card) {
-    return {
-      ...card,
-      theme: getCardTheme(card.card_type),
-      fields: normalizeFields(card.display_fields),
-      options: Array.isArray(card.options)
-        ? card.options.map((option, index) => ({
-          ...option,
-          id: option.id || String(index),
-          label: option.label || '选择'
-        }))
-        : [],
-      primaryText: getConfirmButtonText(card.action_type),
-      route: buildRoute(card)
-    };
-  },
-
-  _buildPendingContext(res, text, sourceContext) {
-    if (!res || res.type !== AI_RESPONSE_TYPES.FOLLOWUP || !res.intent || res.intent === 'unknown') {
-      return null;
-    }
-    return {
-      ...(sourceContext || {}),
-      intent: res.intent,
-      previous_input: sourceContext && sourceContext.previous_input
-        ? `${sourceContext.previous_input} ${text}`
-        : text
-    };
-  },
-
-  async onConfirmCard(e) {
-    const confirmationId = e.currentTarget.dataset.id;
-    if (!confirmationId || this.data.executingId) return;
-    this.setData({ executingId: confirmationId });
+  setupVoice() {
     try {
-      const res = await executeAiAction({ confirmationId });
-      const card = res && res.card ? this._normalizeCard(res.card) : null;
-      this.setData({
-        messages: [
-          ...this.data.messages,
-          createMessage(
-            'assistant',
-            (res && res.type) || AI_RESPONSE_TYPES.RESULT_CARD,
-            (res && res.text) || (res && res.message) || '操作已处理。',
-            card
-          )
-        ]
-      });
-      if (res && res.success) {
-        this.loadTodaySummary();
-      }
-    } catch (err) {
-      this.setData({
-        messages: [
-          ...this.data.messages,
-          createMessage('assistant', AI_RESPONSE_TYPES.ERROR, '确认执行失败，请返回传统页面检查数据后手动处理。')
-        ]
-      });
-    } finally {
-      this.setData({ executingId: '' });
-    }
-  },
-
-  async onChoiceOption(e) {
-    const messageId = e.currentTarget.dataset.messageId;
-    const optionIndex = Number(e.currentTarget.dataset.optionIndex);
-    const message = this.data.messages.find(item => item.id === messageId);
-    const option = message && message.card && message.card.options
-      ? message.card.options[optionIndex]
-      : null;
-    if (!option || this.data.sending) return;
-
-    const messages = this.data.messages.map(msg => {
-      if (msg.id === messageId && msg.card) {
-        return {
-          ...msg,
-          card: { ...msg.card, local_selected: option.id || option.label }
-        };
-      }
-      return msg;
-    });
-    this.setData({ messages });
-    await this.sendText(option.text || option.prompt || option.label, option.source_context || {});
-  },
-
-  async onCancelCard(e) {
-    const confirmationId = e.currentTarget.dataset.id;
-    if (!confirmationId || this.data.executingId) return;
-    this.setData({ executingId: confirmationId });
-    try {
-      const res = await cancelAiAction({ confirmationId });
-      if (!res || !res.success) {
-        wx.showToast({ title: (res && res.message) || '取消失败', icon: 'none' });
+      if (typeof requirePlugin !== "function") {
+        this.setData({ voiceHint: "语音转写暂不可用，请先使用文字输入" });
         return;
       }
-    } catch (err) {
-      wx.showToast({ title: '取消失败', icon: 'none' });
-      return;
-    } finally {
-      this.setData({ executingId: '' });
+      const plugin = requirePlugin("WechatSI");
+      recordManager = plugin.getRecordRecognitionManager();
+      recordManager.onStart = () => this.setData({ voiceState: "recording", voiceHint: "正在录音，上滑取消" });
+      recordManager.onStop = (res) => {
+        const text = res && res.result ? res.result : "";
+        this.setData({
+          voiceState: "idle",
+          voiceHint: text ? "转写完成，可修改后发送" : "没有识别到内容",
+          inputText: text || this.data.inputText
+        });
+      };
+      recordManager.onError = () => {
+        this.setData({ voiceState: "failed", voiceHint: "转写失败，可重试或改用文字输入" });
+      };
+    } catch (error) {
+      console.warn("WechatSI plugin unavailable", error);
+      this.setData({ voiceHint: "语音转写暂不可用，请先使用文字输入" });
     }
-    const messages = this.data.messages.map(msg => {
-      if (msg.card && msg.card.confirmation_id === confirmationId) {
-        return {
-          ...msg,
-          card: { ...msg.card, local_cancelled: true }
-        };
-      }
-      return msg;
-    });
-    this.setData({ messages });
   },
 
-  onNavigateFromCard(e) {
-    const route = e.currentTarget.dataset.route;
-    if (!route) return;
-    if (route.includes('/pages/coach/lessons/lessons')) {
-      wx.switchTab({ url: route });
-    } else {
-      wx.navigateTo({ url: route });
+  loadToday() {
+    aiApi.getTodayContext()
+      .then((res) => this.setData({ today: res.data || this.data.today }))
+      .catch((err) => console.warn("getTodayContext failed", err));
+  },
+
+  loadPendingConfirmations() {
+    aiApi.getPendingConfirmations()
+      .then((res) => {
+        const cards = (res.data || []).map((card) => ({
+          id: card._id,
+          role: "assistant",
+          type: "confirm_card",
+          text: "你还有一张待确认卡。",
+          card,
+          created_at: Date.now()
+        }));
+        if (cards.length) {
+          this.setData({
+            messages: this.data.messages.concat(cards),
+            scrollIntoView: `msg-${this.data.messages.length + cards.length - 1}`
+          });
+        }
+      })
+      .catch((err) => console.warn("getPendingConfirmations failed", err));
+  },
+
+  onInput(event) {
+    this.setData({ inputText: event.detail.value });
+  },
+
+  sendQuick(event) {
+    const prompt = event.currentTarget.dataset.prompt;
+    this.setData({ inputText: prompt });
+    this.sendMessage();
+  },
+
+  sendMessage() {
+    const text = (this.data.inputText || "").trim();
+    if (!text || this.data.sending) return;
+
+    const userMessage = {
+      id: `local_${Date.now()}`,
+      role: "user",
+      type: "text",
+      text,
+      created_at: Date.now(),
+      status: "done"
+    };
+
+    const userMessages = this.data.messages.concat(userMessage);
+    this.setData({
+      messages: userMessages,
+      scrollIntoView: `msg-${userMessages.length - 1}`,
+      inputText: "",
+      sending: true,
+      voiceHint: ""
+    });
+
+    aiApi.sendAiMessage({ text, inputType: "text", sourceContext: this.sourceContext })
+      .then((res) => {
+        const reply = {
+          id: res.messageId || `ai_${Date.now()}`,
+          role: "assistant",
+          type: res.type,
+          text: res.text || "",
+          card: res.card || null,
+          created_at: Date.now(),
+          status: "done"
+        };
+        const nextMessages = this.data.messages.concat(reply);
+        this.setData({
+          messages: nextMessages,
+          scrollIntoView: `msg-${nextMessages.length - 1}`,
+          sending: false
+        });
+        this.sourceContext = { source: "ai_home" };
+        this.loadToday();
+      })
+      .catch((err) => {
+        this.setData({
+          inputText: text,
+          sending: false,
+          scrollIntoView: `msg-${this.data.messages.length}`,
+          messages: this.data.messages.concat({
+            id: `err_${Date.now()}`,
+            role: "assistant",
+            type: "error",
+            text: err.message || "AI 请求失败，文本已保留，可稍后重试。",
+            created_at: Date.now()
+          })
+        });
+      });
+  },
+
+  onTouchStart() {
+    if (!recordManager) {
+      wx.showToast({ title: "语音插件不可用", icon: "none" });
+      return;
     }
+    this.cancelVoice = false;
+    this.voiceStartAt = Date.now();
+    recordManager.start({ duration: 60000, lang: "zh_CN" });
+  },
+
+  onTouchMove(event) {
+    const touch = event.touches && event.touches[0];
+    if (touch && touch.clientY < 520) {
+      this.cancelVoice = true;
+      this.setData({ voiceHint: "松开取消录音" });
+    }
+  },
+
+  onTouchEnd() {
+    if (!recordManager) return;
+    if (Date.now() - (this.voiceStartAt || 0) < 1000) {
+      this.setData({ voiceState: "failed", voiceHint: "录音太短，请重新录音" });
+    }
+    recordManager.stop();
+    if (this.cancelVoice) {
+      this.setData({ voiceState: "idle", voiceHint: "已取消录音" });
+    }
+  },
+
+  confirmCard(event) {
+    const card = event.detail.card;
+    if (!card || !card.confirmationId) return;
+    wx.showLoading({ title: "执行中" });
+    aiApi.executeAiAction({ confirmationId: card.confirmationId, userEdits: event.detail.userEdits || {} })
+      .then((res) => {
+        wx.hideLoading();
+        const nextMessages = this.data.messages.concat({
+            id: `result_${Date.now()}`,
+            role: "assistant",
+            type: "result_card",
+            text: "",
+            card: res.card,
+            created_at: Date.now()
+          });
+        this.setData({
+          messages: nextMessages,
+          scrollIntoView: `msg-${nextMessages.length - 1}`
+        });
+        this.loadToday();
+      })
+      .catch((err) => {
+        wx.hideLoading();
+        api.toastError(err);
+      });
+  },
+
+  cancelCard(event) {
+    const card = event.detail.card;
+    if (!card || !card.confirmationId) return;
+    wx.showLoading({ title: "取消中" });
+    aiApi.executeAiAction({ confirmationId: card.confirmationId, action: "cancel" })
+      .then((res) => {
+        wx.hideLoading();
+        wx.showToast({ title: res.text || "已取消，未写入数据", icon: "none" });
+      })
+      .catch((err) => {
+        wx.hideLoading();
+        api.toastError(err);
+      });
   }
 });

@@ -1,6 +1,0 @@
-{
-  "usingComponents": {
-    "t-button": "tdesign-miniprogram/button/button"
-  },
-  "navigationBarTitleText": "私教助手"
-}

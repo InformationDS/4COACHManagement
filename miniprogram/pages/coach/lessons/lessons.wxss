@@ -1,273 +1,79 @@
-/* pages/coach/lessons/lessons.wxss — FORGE 主题 */
-
-/* ===== 当日工作台 ===== */
-.workbench-card {
-  margin-bottom: var(--space-md);
-  padding: 32rpx;
-  border-radius: var(--td-radius-large);
-  background: #1A1A2E;
-  color: #fff;
-  box-shadow: 0 10rpx 28rpx rgba(26, 26, 46, 0.16);
+.small {
+  margin: 0;
+  min-width: 152rpx;
+  height: 64rpx;
+  line-height: 64rpx;
+  font-size: 24rpx;
 }
 
-.workbench-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--space-sm);
-}
-
-.workbench-label {
-  display: block;
-  font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.62);
-}
-
-.workbench-date {
-  display: block;
-  margin-top: 6rpx;
+.date-picker {
   font-size: 34rpx;
   font-weight: 700;
-  color: #fff;
 }
 
-.next-lesson {
-  margin-top: 28rpx;
-  padding: 24rpx;
-  border-radius: var(--td-radius-medium);
-  background: rgba(255, 107, 53, 0.16);
-  border: 1rpx solid rgba(255, 107, 53, 0.28);
+.segments {
+  display: flex;
+  margin-top: 22rpx;
+  background: #f0f2f5;
+  border-radius: 12rpx;
+  padding: 6rpx;
 }
 
-.next-lesson.is-empty {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.12);
+.segment {
+  flex: 1;
+  height: 58rpx;
+  line-height: 58rpx;
+  text-align: center;
+  border-radius: 10rpx;
+  color: #6b7280;
 }
 
-.next-title {
-  display: block;
-  font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.66);
-}
-
-.next-main {
-  display: block;
-  margin-top: 8rpx;
-  font-size: 32rpx;
+.segment.active {
+  background: #ffffff;
+  color: #ff6b35;
   font-weight: 700;
-  color: #fff;
 }
 
-.next-sub {
-  display: block;
-  margin-top: 6rpx;
+.stats {
+  margin-top: 18rpx;
+  color: #6b7280;
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.72);
 }
 
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12rpx;
-  margin-top: 20rpx;
-}
-
-.summary-item {
-  min-height: 92rpx;
-  border-radius: var(--td-radius-medium);
-  background: rgba(255, 255, 255, 0.09);
+.lesson-row {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 20rpx;
+  min-height: 112rpx;
+  margin-bottom: 16rpx;
+  padding: 20rpx;
+  border-radius: 16rpx;
+  background: #ffffff;
+  box-sizing: border-box;
 }
 
-.summary-number {
-  font-size: 30rpx;
+.time {
+  width: 150rpx;
+  color: #1a1a2e;
   font-weight: 700;
-  color: #fff;
+  font-size: 24rpx;
 }
 
-.summary-label {
-  margin-top: 4rpx;
-  font-size: 20rpx;
-  color: rgba(255, 255, 255, 0.62);
+.info {
+  flex: 1;
 }
 
-/* ===== 区域标题 ===== */
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--space-sm) 0;
+.name {
+  margin-bottom: 6rpx;
+  font-weight: 700;
 }
 
-.section-title {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  color: var(--color-text);
+.empty {
+  text-align: center;
+  color: #6b7280;
 }
 
-.section-count {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-}
-
-/* ===== 排课弹窗 ===== */
-.modal-wrapper {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1000;
-}
-
-.modal-mask {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.45);
-}
-
-.modal-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 1;
-  width: 640rpx;
-  max-height: 85vh;
-  overflow-y: auto;
-}
-
-.modal-content {
-  background: var(--color-bg-white);
-  border-radius: var(--td-radius-large);
-  padding: 40rpx var(--space-lg);
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-xs);
-}
-
-.modal-title {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.modal-close {
-  width: 48rpx;
-  height: 48rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 32rpx;
-  color: var(--color-text-muted);
-}
-
-.modal-actions {
-  display: flex;
-}
-
-.picker-display {
-  display: flex;
-  align-items: center;
-  color: var(--color-text);
-}
-
-/* ===== 课程详情 Popup ===== */
-.detail-popup {
-  padding: var(--space-lg) var(--space-md);
-  padding-bottom: calc(env(safe-area-inset-bottom) + var(--space-xl));
-}
-
-.detail-popup-header {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-bottom: var(--space-md);
-  margin-bottom: var(--space-md);
-  border-bottom: 1rpx solid var(--color-divider);
-}
-
-.detail-popup-title {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20rpx 0;
-  border-bottom: 1rpx solid var(--color-divider);
-}
-
-.detail-label {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-}
-
-.detail-value {
-  font-size: var(--text-sm);
-  color: var(--color-text);
-  font-weight: 500;
-}
-
-.detail-actions {
-  display: flex;
-  margin-top: var(--space-lg);
-  gap: var(--space-sm);
-}
-
-.detail-ai-action {
-  margin-top: var(--space-lg);
-}
-
-/* ===== 取消原因弹窗 ===== */
-.cancel-dialog-body {
-  padding: var(--space-sm) 0;
-}
-
-/* ===== 自定义 FAB ===== */
-.fab {
-  position: fixed;
-  right: 32rpx;
-  bottom: 180rpx;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 112rpx;
-  height: 112rpx;
-  border-radius: 56rpx;
-  background: var(--color-brand);
-  box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.35);
-  z-index: 100;
-  transition: transform 0.15s ease-out;
-}
-
-.fab:active {
-  transform: scale(0.93);
-}
-
-.fab-icon {
-  font-size: 44rpx;
-  font-weight: 300;
-  color: #fff;
-  line-height: 1;
-}
-
-.fab-text {
-  font-size: 18rpx;
-  color: rgba(255, 255, 255, 0.9);
-  margin-top: 2rpx;
+.cancelled {
+  padding-top: 14rpx;
+  color: #9ca3af;
 }

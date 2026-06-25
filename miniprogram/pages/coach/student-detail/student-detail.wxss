@@ -1,229 +1,38 @@
-/* pages/coach/student-detail/student-detail.wxss — FORGE 主题 */
-
-/* ===== 加载 ===== */
-.loading-wrap {
+.segments {
   display: flex;
-  justify-content: center;
-  padding: 200rpx 0;
-}
-
-/* ===== 头像区域 ===== */
-.avatar-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40rpx 0 var(--space-md);
-}
-
-.avatar-box {
-  width: 140rpx;
-  height: 140rpx;
-  border-radius: 50%;
-  background: var(--color-bg-active);
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--td-shadow-1);
-}
-
-.avatar-box image {
-  width: 100%;
-  height: 100%;
-}
-
-.avatar-box-placeholder {
-  font-size: 56rpx;
-  opacity: 0.5;
-}
-
-.avatar-camera {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 44rpx;
-  background: rgba(0, 0, 0, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24rpx;
-}
-
-.avatar-hint {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  margin-top: var(--space-sm);
-}
-
-/* ===== 性别选择 ===== */
-.radio-group {
-  display: flex;
-  gap: var(--space-sm);
-}
-
-.radio-item {
-  flex: 1;
-  height: 72rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--color-bg-active);
-  border-radius: var(--td-radius-small);
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  border: 2rpx solid transparent;
-  transition: all 0.2s;
-}
-
-.radio-item.active {
-  background: var(--color-brand-light);
-  color: var(--color-brand);
-  border-color: var(--color-brand);
-  font-weight: 500;
-}
-
-/* ===== 表单行 ===== */
-.form-row {
-  display: flex;
-  gap: var(--space-sm);
-}
-
-/* ===== 课时概览 ===== */
-.lessons-overview {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: var(--space-lg) 0;
-  background: var(--color-brand-light);
-  border-radius: var(--td-radius-default);
-  margin-bottom: var(--space-md);
-}
-
-.lessons-overview-sm {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: var(--space-md) 0;
-  margin-bottom: var(--space-lg);
-}
-
-.lessons-actions {
-  display: flex;
-  gap: var(--space-sm);
-}
-
-.schedule-action {
-  margin-top: var(--space-sm);
-}
-
-.ai-action-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-sm);
-}
-
-.ai-action-btn {
-  height: 76rpx;
-  padding: 0 16rpx;
-  border-radius: var(--td-radius-default);
-  background: var(--color-brand-light);
-  color: var(--color-brand);
-  font-size: 24rpx;
-  line-height: 76rpx;
-}
-
-/* ===== 课时变动记录 ===== */
-.section-title {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text);
-  margin-bottom: 12rpx;
-}
-
-.log-item {
-  display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 20rpx 0;
-  border-bottom: 1rpx solid var(--color-divider);
+  color: #6b7280;
 }
 
-.log-item:last-child {
-  border-bottom: none;
+.segments text {
+  padding: 14rpx 0;
 }
 
-.log-info {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+.segments .active {
+  color: #ff6b35;
+  font-weight: 700;
 }
 
-.log-reason {
-  font-size: var(--text-sm);
-  color: var(--color-text);
+.tab-body {
+  margin-top: 20rpx;
+  line-height: 1.8;
 }
 
-.log-time {
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  margin-top: 4rpx;
+.line {
+  padding: 14rpx 0;
+  border-top: 1rpx solid #eef0f3;
 }
 
-.log-amount {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  flex-shrink: 0;
-  margin-left: var(--space-md);
+.title {
+  margin-bottom: 18rpx;
+  font-weight: 700;
 }
 
-/* ===== 近期课程列表 ===== */
-.mini-lesson-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20rpx 0;
-  border-bottom: 1rpx solid var(--color-divider);
+.reason {
+  margin-top: 16rpx;
 }
 
-.mini-lesson-item:last-child {
-  border-bottom: none;
-}
-
-.ml-left {
-  display: flex;
-  flex-direction: column;
-  gap: 2rpx;
-}
-
-.ml-date {
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.ml-time {
-  font-size: var(--text-xs);
-  color: var(--color-text-secondary);
-}
-
-.ml-location {
-  font-size: 22rpx;
-  color: var(--color-text-muted);
-  margin-top: 2rpx;
-}
-
-.ml-right {
-  flex-shrink: 0;
-}
-
-/* ===== Dialog 内容 ===== */
-.dialog-body {
-  padding: var(--space-xs) 0;
-}
-
-/* ===== 通用间距 ===== */
-.py-24 {
-  padding: var(--space-md) 0;
+.half-btn {
+  width: 48%;
+  margin: 18rpx 0 0;
 }

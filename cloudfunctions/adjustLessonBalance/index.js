@@ -1,70 +1,42 @@
-// cloudfunctions/adjustLessonBalance/index.js
-// Coach-only lesson balance adjustment with transactional log writing.
-const cloud = require('wx-server-sdk');
+const cloud = require("wx-server-sdk");
+
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
 const db = cloud.database();
 const _ = db.command;
 
+function fail(error_code, error_message) {
+  return { success: false, error_code, error_message };
+}
+
 exports.main = async (event) => {
-  const wxContext = cloud.getWXContext();
-  const coachOpenid = wxContext.OPENID;
-  const { studentId, changeAmount, reason } = event;
-  const amount = Number(changeAmount);
+  const { OPENID } = cloud.getWXContext();
+  if (!OPENID) return fail("NO_OPENID", "无法获取用户身份");
+  const studentId = event.student_id;
+  const rawAmount = Number(event.amount || 0);
+  const type = event.type;
+  if (!studentId || !rawAmount) return fail("VALIDATION_FAILED", "学员和课时数量不能为空");
+  if (!["recharge", "manual_deduct"].includes(type)) return fail("VALIDATION_FAILED", "课时调整类型无效");
+  const amount = type === "manual_deduct" ? -Math.abs(rawAmount) : Math.abs(rawAmount);
 
-  if (!studentId) {
-    return { success: false, message: '缺少学员 ID' };
-  }
-  if (!Number.isFinite(amount) || amount === 0) {
-    return { success: false, message: '课时变动数量无效' };
-  }
-
-  try {
-    return await db.runTransaction(async (transaction) => {
-      const studentRes = await transaction.collection('students').doc(studentId).get();
-      const student = studentRes.data;
-
-      if (!student) {
-        return { success: false, message: '学员不存在' };
-      }
-      if (student.coach_openid !== coachOpenid) {
-        return { success: false, message: '无权操作该学员' };
-      }
-
-      const oldBalance = Number(student.remaining_lessons || 0);
-      const newBalance = oldBalance + amount;
-      if (newBalance < 0) {
-        return { success: false, message: '扣减后课时不能为负数' };
-      }
-
-      const now = new Date();
-      await transaction.collection('students').doc(studentId).update({
-        data: {
-          remaining_lessons: _.inc(amount),
-          updated_at: now
-        }
-      });
-
-      await transaction.collection('lesson_card_logs').add({
-        data: {
-          student_id: studentId,
-          coach_openid: coachOpenid,
-          change_amount: amount,
-          balance_after: newBalance,
-          reason: reason || (amount > 0 ? '课时充值' : '手动扣减'),
-          created_at: now
-        }
-      });
-
-      return {
-        success: true,
-        oldBalance,
-        newBalance,
-        changeAmount: amount
-      };
+  return db.runTransaction(async (transaction) => {
+    const student = await transaction.collection("students").doc(studentId).get();
+    if (!student.data || student.data.coach_openid !== OPENID) return fail("NOT_OWNER", "无权操作该学员");
+    const next = Number(student.data.remaining_lessons || 0) + amount;
+    if (next < 0) return fail("INSUFFICIENT_BALANCE", "扣减后课时不能小于 0");
+    await transaction.collection("students").doc(studentId).update({
+      data: { remaining_lessons: _.inc(amount), updated_at: db.serverDate() }
     });
-  } catch (err) {
-    console.error('adjustLessonBalance error:', err);
-    return { success: false, message: err.message || '服务端错误' };
-  }
+    await transaction.collection("lesson_balance_logs").add({
+      data: {
+        coach_openid: OPENID,
+        student_id: studentId,
+        type,
+        amount,
+        reason: event.reason || "",
+        created_at: db.serverDate()
+      }
+    });
+    return { success: true };
+  });
 };

@@ -1,0 +1,66 @@
+.message {
+  margin-bottom: 20rpx;
+}
+
+.message.user {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bubble {
+  max-width: 78%;
+  padding: 18rpx 22rpx;
+  border-radius: 16rpx;
+  background: #ffffff;
+  line-height: 1.55;
+  box-sizing: border-box;
+}
+
+.user .bubble {
+  color: #ffffff;
+  background: #ff6b35;
+}
+
+.result-card,
+.data-card {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 22rpx;
+}
+
+.result-title,
+.data-title {
+  font-weight: 700;
+}
+
+.result-link {
+  margin-top: 10rpx;
+  color: #ff6b35;
+}
+
+.data-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+  padding: 10rpx 0;
+  border-top: 1rpx solid #eef0f3;
+}
+
+.data-summary {
+  margin-top: 8rpx;
+  margin-bottom: 10rpx;
+  color: #6b7280;
+  font-size: 24rpx;
+}
+
+.data-row text:first-child {
+  color: #6b7280;
+  min-width: 160rpx;
+}
+
+.data-row text:last-child {
+  flex: 1;
+  text-align: right;
+  color: #1a1a2e;
+}

@@ -1,0 +1,105 @@
+.confirm-card {
+  border: 2rpx solid #ffb48f;
+  background: #fff8f4;
+  border-radius: 16rpx;
+  padding: 22rpx;
+}
+
+.card-head,
+.field-row,
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.card-title {
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.card-badge {
+  color: #cc4921;
+  font-size: 22rpx;
+}
+
+.summary {
+  margin-top: 12rpx;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.fields {
+  margin-top: 16rpx;
+}
+
+.field-row {
+  padding: 10rpx 0;
+  border-top: 1rpx solid rgba(204, 73, 33, 0.12);
+}
+
+.edit-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  padding: 10rpx 0;
+  border-top: 1rpx solid rgba(204, 73, 33, 0.12);
+}
+
+.field-label {
+  color: #6b7280;
+  min-width: 180rpx;
+}
+
+.field-value {
+  color: #1a1a2e;
+  text-align: right;
+  max-width: 420rpx;
+}
+
+.edit-control,
+.edit-input {
+  flex: 1;
+  min-height: 58rpx;
+  line-height: 58rpx;
+  padding: 0 14rpx;
+  border-radius: 10rpx;
+  background: #ffffff;
+  color: #1a1a2e;
+  text-align: right;
+  box-sizing: border-box;
+}
+
+.edit-input {
+  width: 420rpx;
+}
+
+.warning {
+  margin-top: 14rpx;
+  color: #e74c3c;
+  font-size: 24rpx;
+}
+
+.actions {
+  margin-top: 18rpx;
+  justify-content: flex-end;
+  gap: 16rpx;
+}
+
+.ghost,
+.primary {
+  margin: 0;
+  min-width: 132rpx;
+  border-radius: 12rpx;
+}
+
+.ghost {
+  color: #1a1a2e;
+  background: #ffffff;
+}
+
+.primary {
+  color: #ffffff;
+  background: #ff6b35;
+}

@@ -1,0 +1,24 @@
+<view class="page" wx:if="{{lesson}}">
+  <view class="panel section">
+    <view class="row between">
+      <view>
+        <view class="title">{{lesson.student_name}}</view>
+        <view class="muted">{{lesson.date}} {{lesson.start_time}}-{{lesson.end_time}}</view>
+      </view>
+      <view class="tag">{{lesson.status_text}}</view>
+    </view>
+  </view>
+  <view class="panel section">
+    <view class="detail-row"><text>地点</text><text>{{lesson.location || '未填写'}}</text></view>
+    <view class="detail-row"><text>消耗课时</text><text>{{lesson.lesson_units}}</text></view>
+    <view class="detail-row"><text>总结状态</text><text>{{lesson.summary_status === 'completed' ? '已完成' : '未完成'}}</text></view>
+    <view class="detail-row"><text>课前方案</text><text>{{lesson.training_plan && lesson.training_plan.theme ? lesson.training_plan.theme : '未填写'}}</text></view>
+    <view class="notes">{{lesson.notes}}</view>
+  </view>
+  <view class="actions">
+    <button class="ghost-button" bindtap="edit">修改课程</button>
+    <button wx:if="{{lesson.status === 'confirmed'}}" class="primary-button" bindtap="complete">标记完成</button>
+    <button class="ghost-button" bindtap="recordTraining">记录训练</button>
+    <button wx:if="{{lesson.status !== 'cancelled'}}" class="ghost-button danger" bindtap="cancelLesson">取消</button>
+  </view>
+</view>

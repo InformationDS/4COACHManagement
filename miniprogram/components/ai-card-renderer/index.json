@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "confirm-card": "/components/confirm-card/index"
+  }
+}

@@ -1,0 +1,18 @@
+<view class="message {{message.role === 'user' ? 'user' : 'assistant'}}">
+  <view wx:if="{{message.text}}" class="bubble">{{message.text}}</view>
+  <confirm-card wx:if="{{message.type === 'confirm_card'}}" card="{{message.card}}" bind:confirm="onConfirm" bind:cancel="onCancel" />
+  <view wx:elif="{{message.type === 'result_card'}}" class="result-card" bindtap="openRoute">
+    <view class="result-title">{{message.card.summary || '已完成'}}</view>
+    <view wx:if="{{message.card.route}}" class="result-link">查看详情</view>
+  </view>
+  <view wx:elif="{{message.card && message.type !== 'confirm_card'}}" class="data-card">
+    <view class="data-title">{{message.card.title || message.card.summary || '结果'}}</view>
+    <view wx:if="{{message.card.summary}}" class="data-summary">{{message.card.summary}}</view>
+    <block wx:for="{{message.card.items}}" wx:key="label">
+      <view class="data-row">
+        <text>{{item.label}}</text>
+        <text>{{item.value}}</text>
+      </view>
+    </block>
+  </view>
+</view>

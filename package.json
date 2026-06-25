@@ -1,9 +1,12 @@
 {
-  "name": "private-coach-assistant",
-  "version": "1.0.0",
-  "description": "自由私人教练助手 - 微信小程序",
-  "main": "miniprogram/app.js",
-  "dependencies": {
-    "tdesign-miniprogram": "^1.9.0"
-  }
+  "name": "ai-coach-assistant-miniprogram",
+  "version": "0.2.0",
+  "private": true,
+  "description": "AI-first coach-only WeChat Mini Program scaffold with CloudBase cloud functions.",
+  "scripts": {
+    "check:json": "node scripts/check-json.js",
+    "check:js": "node scripts/check-js.js",
+    "check": "npm run check:json && npm run check:js"
+  },
+  "devDependencies": {}
 }

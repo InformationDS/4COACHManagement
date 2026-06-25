@@ -1,7 +1,6 @@
 {
   "name": "aiActionExecutor",
   "version": "1.0.0",
-  "description": "Execute confirmed AI coach assistant actions",
   "main": "index.js",
   "dependencies": {
     "wx-server-sdk": "~2.6.3"

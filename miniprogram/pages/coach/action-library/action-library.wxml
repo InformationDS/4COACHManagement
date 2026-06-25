@@ -1,0 +1,19 @@
+<view class="page">
+  <view class="panel section">
+    <input class="input" placeholder="按标准动作或别名搜索" value="{{keyword}}" bindinput="onSearch" />
+  </view>
+  <view class="panel section">
+    <view class="form-field"><text class="form-label">标准动作名称</text><input class="input" value="{{form.canonical_name}}" data-key="canonical_name" bindinput="inputField" /></view>
+    <view class="form-field"><text class="form-label">别名（逗号分隔）</text><input class="input" value="{{form.aliases}}" data-key="aliases" bindinput="inputField" /></view>
+    <view class="form-field"><text class="form-label">部位</text><input class="input" value="{{form.body_part}}" data-key="body_part" bindinput="inputField" /></view>
+    <view class="form-field"><text class="form-label">器械</text><input class="input" value="{{form.equipment}}" data-key="equipment" bindinput="inputField" /></view>
+    <button class="primary-button" bindtap="save">新增自定义动作</button>
+  </view>
+  <block wx:for="{{actions}}" wx:key="_id">
+    <view class="action-row">
+      <view class="name">{{item.canonical_name}}</view>
+      <view class="muted">{{item.body_part}} · {{item.equipment}} · {{item.source}}</view>
+      <view class="muted">别名：{{item.aliases_text || '无'}}</view>
+    </view>
+  </block>
+</view>

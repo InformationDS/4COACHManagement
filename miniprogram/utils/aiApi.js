@@ -1,73 +1,39 @@
-const { callCloud } = require('./api');
+const { callFunction } = require("./api");
 
-function formatLocalDate(date = new Date()) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
-}
-
-function buildClientTime() {
-  const now = new Date();
-  return {
-    iso: now.toISOString(),
-    date: formatLocalDate(now),
-    timezoneOffset: now.getTimezoneOffset()
-  };
-}
-
-async function sendAiMessage({ text, inputType = 'text', sourceContext = {} }) {
-  return callCloud('aiCoachAssistant', {
+function sendAiMessage({ text, inputType, sourceContext }) {
+  return callFunction("aiCoachAssistant", {
     text,
-    inputType,
-    sourceContext,
-    clientTime: buildClientTime()
+    inputType: inputType || "text",
+    sourceContext: sourceContext || { source: "ai_home" },
+    clientTime: new Date().toISOString()
   });
 }
 
-async function executeAiAction({ confirmationId }) {
-  return callCloud('aiActionExecutor', { confirmationId });
-}
-
-async function cancelAiAction({ confirmationId }) {
-  return callCloud('aiActionExecutor', {
-    action: 'cancel',
-    confirmationId
+function executeAiAction({ confirmationId, userEdits, action }) {
+  return callFunction("aiActionExecutor", {
+    action: action || "confirm",
+    confirmationId,
+    userEdits: userEdits || {}
   });
 }
 
-async function getAiTodaySummary() {
-  return sendAiMessage({
-    text: '今天怎么样？',
-    sourceContext: {
-      source: 'ai_home',
-      intent: 'today_summary',
-      silent: true
-    }
+function getTodayContext() {
+  return callFunction("aiCoachAssistant", {
+    action: "getTodayContext",
+    clientTime: new Date().toISOString()
   });
 }
 
-async function getAiStatus() {
-  try {
-    return await callCloud('aiCoachAssistant', { action: 'status' });
-  } catch (err) {
-    return {
-      success: false,
-      aiAvailable: false,
-      modelConfigured: false,
-      voiceAvailable: false,
-      modelMode: 'unavailable',
-      degradedReason: err.message || 'status_check_failed',
-      message: 'AI 状态检查失败，传统页面仍可使用。'
-    };
-  }
+function getPendingConfirmations() {
+  return callFunction("aiCoachAssistant", {
+    action: "getPendingConfirmations",
+    clientTime: new Date().toISOString()
+  });
 }
 
 module.exports = {
   sendAiMessage,
   executeAiAction,
-  cancelAiAction,
-  getAiTodaySummary,
-  getAiStatus,
-  formatLocalDate
+  getTodayContext,
+  getPendingConfirmations
 };

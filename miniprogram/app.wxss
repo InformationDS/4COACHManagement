@@ -1,474 +1,97 @@
-/* app.wxss — 「FORGE 锻造」设计系统
- * 自由私人教练助手 · 全局样式
- * TDesign + 健身主题定制
- */
-
-/* =============================================
- * TDesign 主题 Token 覆盖（在引入前定义）
- * ============================================= */
 page {
-  /* —— 品牌色（健身橙红 — 能量、行动）—— */
-  --td-brand-color: #FF6B35;
-  --td-brand-color-1: #FFF0E8;
-  --td-brand-color-2: #FFD4BF;
-  --td-brand-color-3: #FFB895;
-  --td-brand-color-4: #FF9C6C;
-  --td-brand-color-5: #FF8042;
-  --td-brand-color-6: #FF6B35;
-  --td-brand-color-7: #E55A2B;
-  --td-brand-color-8: #CC4921;
-  --td-brand-color-9: #B23818;
-  --td-brand-color-10: #99270E;
-  --td-brand-color-active: #E55A2B;
-  --td-brand-color-disabled: #FFD4BF;
-  --td-brand-color-focus: #FF6B35;
-  --td-brand-color-light: #FFF0E8;
-  --td-brand-color-light-active: #FFD4BF;
-
-  /* —— 功能色 —— */
-  --td-success-color: #2D9A4E;
-  --td-success-color-light: #E8F5EC;
-  --td-warning-color: #F5A623;
-  --td-warning-color-light: #FFF8EC;
-  --td-error-color: #E74C3C;
-  --td-error-color-light: #FDEDEC;
-
-  /* —— 圆角体系 —— */
-  --td-radius-small: 6rpx;
-  --td-radius-default: 12rpx;
-  --td-radius-medium: 16rpx;
-  --td-radius-large: 24rpx;
-  --td-radius-extraLarge: 32rpx;
-  --td-radius-round: 50%;
-  --td-radius-circle: 9999rpx;
-
-  /* —— 阴影 —— */
-  --td-shadow-1: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
-  --td-shadow-2: 0 6rpx 24rpx rgba(0, 0, 0, 0.08);
-  --td-shadow-3: 0 12rpx 40rpx rgba(0, 0, 0, 0.10);
-
-  /* —— 字体 —— */
-  --td-font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-  --td-font-size-body-small: 24rpx;
-  --td-font-size-body-medium: 28rpx;
-  --td-font-size-body-large: 32rpx;
-  --td-font-size-title-small: 28rpx;
-  --td-font-size-title-medium: 32rpx;
-  --td-font-size-title-large: 40rpx;
-
-  /* —— 文本色 —— */
-  --td-text-color-primary: #1A1A2E;
-  --td-text-color-secondary: #6B7280;
-  --td-text-color-placeholder: #9CA3AF;
-  --td-text-color-disabled: #D1D5DB;
-  --td-text-color-anti: #FFFFFF;
-  --td-text-color-brand: #FF6B35;
-
-  /* —— 背景色 —— */
-  --td-bg-color-page: #F0F2F5;
-  --td-bg-color-container: #FFFFFF;
-  --td-bg-color-container-active: #F7F8FA;
-  --td-bg-color-secondarycontainer: #F7F8FA;
-  --td-bg-color-component: #F3F4F6;
-  --td-bg-color-component-active: #E5E7EB;
-
-  /* —— 边框色 —— */
-  --td-border-level-1-color: #E5E7EB;
-  --td-border-level-2-color: #F3F4F6;
+  background: #f0f2f5;
+  color: #1a1a2e;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  font-size: 28rpx;
 }
 
-/* =============================================
- * 项目内设计变量（TDesign 未覆盖的部分）
- * ============================================= */
-page {
-  --color-brand: #FF6B35;
-  --color-brand-dark: #E55A2B;
-  --color-brand-light: #FFF0E8;
-  --color-success: #2D9A4E;
-  --color-success-light: #E8F5EC;
-  --color-warning: #F5A623;
-  --color-warning-light: #FFF8EC;
-  --color-danger: #E74C3C;
-  --color-danger-light: #FDEDEC;
-
-  --color-text: #1A1A2E;
-  --color-text-secondary: #6B7280;
-  --color-text-muted: #9CA3AF;
-  --color-text-placeholder: #D1D5DB;
-  --color-text-light: #9CA3AF;       /* 向后兼容 */
-
-  --color-bg: #F0F2F5;
-  --color-bg-white: #FFFFFF;
-  --color-bg-card: #F7F8FA;
-  --color-bg-active: #F3F4F6;
-
-  --color-border: #E5E7EB;
-  --color-divider: #F3F4F6;
-
-  /* —— 向后兼容别名（自定义组件引用）—— */
-  --color-primary: #FF6B35;
-  --color-primary-dark: #E55A2B;
-  --color-primary-light: #FFF0E8;
-
-  /* —— 间距体系（基于 8rpx）—— */
-  --space-xs: 8rpx;
-  --space-sm: 16rpx;
-  --space-md: 24rpx;
-  --space-lg: 32rpx;
-  --space-xl: 48rpx;
-  --space-xxl: 64rpx;
-
-  /* —— 字号 —— */
-  --text-xs: 20rpx;
-  --text-sm: 24rpx;
-  --text-md: 28rpx;
-  --text-lg: 32rpx;
-  --text-xl: 40rpx;
-  --text-xxl: 48rpx;
-  --text-hero: 72rpx;
-}
-
-/* =============================================
- * 全局基础
- * ============================================= */
-page {
-  font-family: var(--td-font-family);
-  font-size: var(--text-md);
-  color: var(--color-text);
-  background-color: var(--color-bg);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* =============================================
- * 通用布局
- * ============================================= */
-.container {
-  padding: var(--space-md);
-  padding-bottom: calc(env(safe-area-inset-bottom) + 160rpx);
+.page {
   min-height: 100vh;
   box-sizing: border-box;
+  padding: 24rpx;
+  padding-bottom: calc(128rpx + env(safe-area-inset-bottom));
 }
 
-.flex-row {
+.section {
+  margin-bottom: 24rpx;
+}
+
+.panel {
+  background: #ffffff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-sizing: border-box;
+}
+
+.row {
   display: flex;
-  flex-direction: row;
   align-items: center;
 }
 
-.flex-column {
-  display: flex;
-  flex-direction: column;
-}
-
-.flex-between {
-  display: flex;
+.between {
   justify-content: space-between;
-  align-items: center;
 }
 
-.flex-center {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.muted {
+  color: #6b7280;
 }
 
-.flex-1 {
-  flex: 1;
+.weak {
+  color: #9ca3af;
 }
 
-/* =============================================
- * 卡片（配合 TDesign 统一视觉）
- * ============================================= */
-.card {
-  background: var(--color-bg-white);
-  border-radius: var(--td-radius-default);
-  padding: var(--space-md);
-  margin-bottom: var(--space-md);
-  box-shadow: var(--td-shadow-1);
-}
-
-.card-header {
-  font-size: var(--text-lg);
-  font-weight: 600;
-  margin-bottom: var(--space-sm);
-  color: var(--color-text);
-}
-
-.card-body {
-  color: var(--color-text-secondary);
-  font-size: var(--text-md);
-}
-
-/* =============================================
- * 保留的通用按钮（用于不需要 t-button 的场景）
- * ============================================= */
-.btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 88rpx;
-  border-radius: var(--td-radius-default);
-  font-size: var(--text-md);
-  font-weight: 500;
-  border: none;
-  transition: opacity 0.2s, transform 0.15s;
-  padding: 0 var(--space-lg);
-}
-
-.btn:active {
-  transform: scale(0.97);
-}
-
-.btn-primary {
-  background-color: var(--color-brand);
-  color: #fff;
-}
-
-.btn-primary:active {
-  background-color: var(--color-brand-dark);
-}
-
-.btn-danger {
-  background-color: var(--color-danger);
-  color: #fff;
-}
-
-.btn-outline {
-  background-color: transparent;
-  color: var(--color-brand);
-  border: 2rpx solid var(--color-brand);
-}
-
-.btn-ghost {
-  background-color: transparent;
-  color: var(--color-text-secondary);
-}
-
-.btn-sm {
-  height: 60rpx;
-  padding: 0 var(--space-md);
-  font-size: var(--text-sm);
-  border-radius: var(--td-radius-small);
-}
-
-.btn-block {
-  width: 100%;
-}
-
-.btn-disabled {
-  opacity: 0.4;
-  pointer-events: none;
-}
-
-/* =============================================
- * 表单（保留原生占位，后续页面升级为 t-input）
- * ============================================= */
-.form-group {
-  margin-bottom: var(--space-lg);
-}
-
-.form-label {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  margin-bottom: 12rpx;
-  display: block;
-}
-
-.form-label .required {
-  color: var(--color-danger);
-  margin-left: 4rpx;
-}
-
-.form-input {
-  width: 100%;
-  height: 88rpx;
-  padding: 0 var(--space-md);
-  background: var(--color-bg-active);
-  border-radius: var(--td-radius-default);
-  font-size: var(--text-md);
-  color: var(--color-text);
-  box-sizing: border-box;
-}
-
-.form-textarea {
-  width: 100%;
-  min-height: 160rpx;
-  padding: 20rpx var(--space-md);
-  background: var(--color-bg-active);
-  border-radius: var(--td-radius-default);
-  font-size: var(--text-md);
-  color: var(--color-text);
-  box-sizing: border-box;
-}
-
-/* =============================================
- * 状态标签（健身风格 — 暖色/活力感）
- * ============================================= */
 .tag {
   display: inline-flex;
   align-items: center;
-  padding: 4rpx 16rpx;
-  border-radius: 9999rpx;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  line-height: 1.4;
+  height: 40rpx;
+  padding: 0 16rpx;
+  border-radius: 999rpx;
+  background: #fff0e8;
+  color: #cc4921;
+  font-size: 22rpx;
+  white-space: nowrap;
 }
 
-.tag-pending {
-  background: #FFF8EC;
-  color: #C2780A;
+.primary-button {
+  background: #ff6b35;
+  color: #ffffff;
+  border-radius: 12rpx;
+  font-weight: 600;
 }
 
-.tag-confirmed {
-  background: #FFF0E8;
-  color: #CC4921;
+.ghost-button {
+  background: #ffffff;
+  color: #1a1a2e;
+  border: 1rpx solid #d1d5db;
+  border-radius: 12rpx;
 }
 
-.tag-completed {
-  background: #E8F5EC;
-  color: #1B6E34;
+.danger {
+  color: #e74c3c;
 }
 
-.tag-cancelled {
-  background: #F3F4F6;
-  color: #9CA3AF;
+.form-field {
+  margin-bottom: 22rpx;
 }
 
-/* =============================================
- * 空状态
- * ============================================= */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 120rpx 40rpx;
+.form-label {
+  display: block;
+  margin-bottom: 10rpx;
+  color: #6b7280;
+  font-size: 24rpx;
 }
 
-.empty-state-icon {
-  font-size: 80rpx;
-  margin-bottom: var(--space-md);
-  opacity: 0.35;
+.input,
+.textarea,
+.picker {
+  min-height: 80rpx;
+  border-radius: 12rpx;
+  background: #f7f8fa;
+  padding: 20rpx;
+  box-sizing: border-box;
 }
 
-.empty-state-text {
-  font-size: var(--text-md);
-  color: var(--color-text-muted);
-  text-align: center;
-  line-height: 1.6;
-}
-
-/* =============================================
- * 列表项
- * ============================================= */
-.list-item {
-  display: flex;
-  align-items: center;
-  padding: var(--space-md);
-  background: var(--color-bg-white);
-  border-bottom: 1rpx solid var(--color-divider);
-}
-
-.list-item:last-child {
-  border-bottom: none;
-}
-
-.list-item:active {
-  background: var(--color-bg-active);
-}
-
-.list-item-arrow::after {
-  content: '';
-  width: 16rpx;
-  height: 16rpx;
-  border-top: 3rpx solid var(--color-text-muted);
-  border-right: 3rpx solid var(--color-text-muted);
-  transform: rotate(45deg);
-  margin-left: auto;
-}
-
-/* =============================================
- * 分割线
- * ============================================= */
-.divider {
-  height: 16rpx;
-  background: var(--color-bg);
-}
-
-/* =============================================
- * 数值突出展示（Hero 数字）
- * ============================================= */
-.hero-number {
-  font-size: var(--text-hero);
-  font-weight: 800;
-  color: var(--color-brand);
-  line-height: 1.1;
-}
-
-.hero-label {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  margin-top: var(--space-xs);
-}
-
-/* =============================================
- * TDesign 组件全局微调
- * ============================================= */
-
-/* 按钮 — 增加按压反馈 */
-.t-button:active {
-  transform: scale(0.97);
-  transition: transform 0.15s ease-out;
-}
-
-/* Cell 列表 — 底部间距 */
-.t-cell-group {
-  margin: 0 var(--space-md) var(--space-md);
-  border-radius: var(--td-radius-default) !important;
-  overflow: hidden;
-  box-shadow: var(--td-shadow-1);
-}
-
-/* =============================================
- * 颜色工具类
- * ============================================= */
-.text-brand     { color: var(--color-brand); }
-.text-success   { color: var(--color-success); }
-.text-warning   { color: var(--color-warning); }
-.text-danger    { color: var(--color-danger); }
-.text-muted     { color: var(--color-text-muted); }
-.text-secondary { color: var(--color-text-secondary); }
-
-.text-xs  { font-size: var(--text-xs); }
-.text-sm  { font-size: var(--text-sm); }
-.text-md  { font-size: var(--text-md); }
-.text-lg  { font-size: var(--text-lg); }
-.text-xl  { font-size: var(--text-xl); }
-
-.text-bold   { font-weight: 600; }
-.text-center { text-align: center; }
-
-/* =============================================
- * 间距工具类
- * ============================================= */
-.mt-8  { margin-top: var(--space-xs); }
-.mt-16 { margin-top: var(--space-sm); }
-.mt-24 { margin-top: var(--space-md); }
-.mt-32 { margin-top: var(--space-lg); }
-.mt-48 { margin-top: var(--space-xl); }
-.mb-8  { margin-bottom: var(--space-xs); }
-.mb-16 { margin-bottom: var(--space-sm); }
-.mb-24 { margin-bottom: var(--space-md); }
-.mb-32 { margin-bottom: var(--space-lg); }
-.ml-8  { margin-left: var(--space-xs); }
-.ml-16 { margin-left: var(--space-sm); }
-.mr-8  { margin-right: var(--space-xs); }
-
-/* =============================================
- * 安全区域
- * ============================================= */
-.safe-bottom {
-  padding-bottom: constant(safe-area-inset-bottom);
-  padding-bottom: env(safe-area-inset-bottom);
+.textarea {
+  min-height: 160rpx;
+  width: 100%;
 }

@@ -1,0 +1,10 @@
+.title {
+  font-size: 34rpx;
+  font-weight: 700;
+  margin-bottom: 18rpx;
+}
+
+.body {
+  color: #6b7280;
+  line-height: 1.7;
+}

@@ -1,74 +1,41 @@
-// app.js - private coach assistant
+const ENV_ID = "cloud1-d6gspyhgucab5be98";
+
 App({
   globalData: {
-    openid: '',
-    role: '',
-    userInfo: null,
-    ready: false,
-    pendingSchedule: null,
-    pendingAiRequest: null
+    env: ENV_ID,
+    coach: null
   },
 
   onLaunch() {
     if (!wx.cloud) {
-      console.error('Please use base library 2.2.3 or above for cloud capability.');
-      this.globalData.ready = true;
+      wx.showModal({
+        title: "基础库过低",
+        content: "当前微信版本不支持云开发，请升级微信后重试。",
+        showCancel: false
+      });
       return;
     }
 
     wx.cloud.init({
-      env: 'cloud1-d6gspyhgucab5be98',
+      env: ENV_ID,
       traceUser: true
     });
 
-    this._initUserRole();
+    this.ensureCoach();
   },
 
-  async _initUserRole() {
-    try {
-      const res = await wx.cloud.callFunction({ name: 'getOpenid' });
-      const openid = res.result.openid;
-      this.globalData.openid = openid;
-
-      try {
-        const db = wx.cloud.database();
-        const userRes = await db.collection('users')
-          .where({ _openid: openid })
-          .limit(1)
-          .get();
-
-        if (userRes.data && userRes.data.length > 0) {
-          const user = userRes.data[0];
-          this.globalData.role = user.role === 'coach' ? 'coach' : 'unknown';
-          this.globalData.userInfo = this.globalData.role === 'coach' ? user : null;
-        } else {
-          this.globalData.role = 'unknown';
-          this.globalData.userInfo = null;
+  ensureCoach() {
+    wx.cloud.callFunction({
+      name: "initUser",
+      data: {},
+      success: (res) => {
+        if (res && res.result && res.result.success) {
+          this.globalData.coach = res.result.user;
         }
-      } catch (dbErr) {
-        console.error('Failed to query user role:', dbErr);
-        this.globalData.role = 'unknown';
-        this.globalData.userInfo = null;
+      },
+      fail: (err) => {
+        console.error("initUser failed", err);
       }
-    } catch (err) {
-      console.error('Failed to initialize user role:', err);
-      this.globalData.role = 'unknown';
-      this.globalData.userInfo = null;
-    } finally {
-      this.globalData.ready = true;
-    }
-  },
-
-  async refreshUserRole() {
-    this.globalData.ready = false;
-    await this._initUserRole();
-  },
-
-  isRegistered() {
-    return this.globalData.role === 'coach';
-  },
-
-  getRole() {
-    return this.globalData.role;
+    });
   }
 });

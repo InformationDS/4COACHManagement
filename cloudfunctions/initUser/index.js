@@ -1,51 +1,74 @@
-// cloudfunctions/initUser/index.js
-// Coach-only user initialization.
+const cloud = require("wx-server-sdk");
 
-const cloud = require('wx-server-sdk');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 
 const db = cloud.database();
 
+async function getOrCreateUser(openid) {
+  const users = await db.collection("users").where({ openid }).limit(1).get();
+  if (users.data.length) return users.data[0];
+
+  const now = db.serverDate();
+  const user = {
+    openid,
+    role: "coach",
+    nick_name: "私人教练",
+    created_at: now,
+    updated_at: now
+  };
+  const created = await db.collection("users").add({ data: user });
+  return Object.assign({ _id: created._id }, user);
+}
+
+async function getOrCreateSettings(openid) {
+  const result = await db.collection("coach_settings").where({ coach_openid: openid }).limit(1).get();
+  if (result.data.length) return result.data[0];
+
+  const data = {
+    coach_openid: openid,
+    timezone: "Australia/Sydney",
+    default_lesson_duration: 60,
+    created_at: db.serverDate(),
+    updated_at: db.serverDate()
+  };
+  const created = await db.collection("coach_settings").add({ data });
+  return Object.assign({ _id: created._id }, data);
+}
+
 exports.main = async (event) => {
-  const wxContext = cloud.getWXContext();
-  const openid = wxContext.OPENID;
-  const { role, name, phone } = event;
+  const { OPENID } = cloud.getWXContext();
+  if (!OPENID) return { success: false, error_code: "NO_OPENID", error_message: "无法获取用户身份" };
 
-  if (role !== 'coach') {
-    return { success: false, message: '当前版本仅支持教练身份' };
-  }
+  const action = event.action || "init";
+  const user = await getOrCreateUser(OPENID);
 
-  try {
-    const existing = await db.collection('users')
-      .where({ _openid: openid })
-      .get();
-
-    const now = new Date();
-    if (existing.data.length > 0) {
-      await db.collection('users').doc(existing.data[0]._id).update({
-        data: {
-          role: 'coach',
-          name: name || '',
-          phone: phone || '',
-          updated_at: now
-        }
-      });
-      return { success: true, message: '教练身份已更新', action: 'updated' };
-    }
-
-    await db.collection('users').add({
+  if (action === "saveSettings") {
+    const settings = event.settings || {};
+    const current = await getOrCreateSettings(OPENID);
+    await db.collection("coach_settings").doc(current._id).update({
       data: {
-        _openid: openid,
-        role: 'coach',
-        name: name || '',
-        phone: phone || '',
-        created_at: now,
-        updated_at: now
+        default_lesson_duration: Number(settings.default_lesson_duration) || 60,
+        updated_at: db.serverDate()
       }
     });
-    return { success: true, message: '教练注册成功', action: 'created' };
-  } catch (err) {
-    console.error('initUser error:', err);
-    return { success: false, message: err.message || '服务端错误' };
   }
+
+  if (action === "feedback") {
+    const content = (event.content || "").trim();
+    if (!content) return { success: false, error_code: "VALIDATION_FAILED", error_message: "反馈内容不能为空" };
+    await db.collection("feedback").add({
+      data: {
+        coach_openid: OPENID,
+        content,
+        created_at: db.serverDate()
+      }
+    });
+  }
+
+  const settings = await getOrCreateSettings(OPENID);
+  return {
+    success: true,
+    user,
+    settings
+  };
 };

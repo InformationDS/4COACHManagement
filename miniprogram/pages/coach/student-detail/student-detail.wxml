@@ -1,178 +1,48 @@
-<!-- pages/coach/student-detail/student-detail.wxml -->
-<view class="container">
-  <block wx:if="{{loading}}">
-    <view class="loading-wrap">
-      <t-loading theme="circular" size="48rpx" text="加载中..." />
+<view class="page">
+  <view class="panel section">
+    <view class="form-field"><text class="form-label">姓名</text><input class="input" value="{{form.name}}" data-key="name" bindinput="inputField" /></view>
+    <view class="form-field"><text class="form-label">手机号</text><input class="input" value="{{form.phone}}" data-key="phone" bindinput="inputField" /></view>
+    <view class="form-field"><text class="form-label">剩余课时</text><input class="input" type="digit" value="{{form.remaining_lessons}}" data-key="remaining_lessons" bindinput="inputField" /></view>
+    <view class="form-field"><text class="form-label">常用上课地点</text><input class="input" value="{{form.default_location}}" data-key="default_location" bindinput="inputField" /></view>
+    <view class="form-field"><text class="form-label">训练目标</text><textarea class="textarea" value="{{form.goal}}" data-key="goal" bindinput="inputField" /></view>
+    <view class="form-field"><text class="form-label">伤病 / 禁忌</text><textarea class="textarea" value="{{form.injuries}}" data-key="injuries" bindinput="inputField" /></view>
+    <view class="form-field"><text class="form-label">备注</text><textarea class="textarea" value="{{form.notes}}" data-key="notes" bindinput="inputField" /></view>
+    <button class="primary-button" bindtap="save">保存学员</button>
+  </view>
+
+  <view wx:if="{{studentId}}" class="panel section">
+    <view class="segments">
+      <text class="{{tab === 'overview' ? 'active' : ''}}" data-tab="overview" bindtap="switchTab">概览</text>
+      <text class="{{tab === 'courses' ? 'active' : ''}}" data-tab="courses" bindtap="switchTab">课程</text>
+      <text class="{{tab === 'summaries' ? 'active' : ''}}" data-tab="summaries" bindtap="switchTab">总结</text>
+      <text class="{{tab === 'data' ? 'active' : ''}}" data-tab="data" bindtap="switchTab">数据</text>
+      <text class="{{tab === 'notes' ? 'active' : ''}}" data-tab="notes" bindtap="switchTab">备注</text>
     </view>
-  </block>
-
-  <block wx:else>
-    <view class="avatar-section">
-      <view class="avatar-box" bindtap="onChooseAvatar">
-        <image wx:if="{{form.avatar_url}}" src="{{form.avatar_url}}" mode="aspectFill" />
-        <text wx:else class="avatar-box-placeholder">头像</text>
-        <view class="avatar-camera">换</view>
-      </view>
-      <text class="avatar-hint">点击更换头像</text>
+    <view wx:if="{{tab === 'overview'}}" class="tab-body">
+      <view>剩余课时：{{form.remaining_lessons || 0}}</view>
+      <view>近 30 天课程：{{lessons.length}}</view>
     </view>
-
-    <view class="card">
-      <view class="card-header">基本信息</view>
-
-      <view class="form-group">
-        <text class="form-label">姓名 <text class="required">*</text></text>
-        <input class="form-input" placeholder="学员姓名" value="{{form.name}}" data-field="name" bindinput="onFieldChange" />
-      </view>
-
-      <view class="form-group">
-        <text class="form-label">手机号 <text class="required">*</text></text>
-        <input class="form-input" type="number" maxlength="11" placeholder="手机号" value="{{form.phone}}" data-field="phone" bindinput="onFieldChange" />
-      </view>
-
-      <view class="form-row">
-        <view class="form-group flex-1">
-          <text class="form-label">性别</text>
-          <view class="radio-group">
-            <view class="radio-item {{form.gender === 'male' ? 'active' : ''}}" data-value="male" bindtap="onGenderTap">男</view>
-            <view class="radio-item {{form.gender === 'female' ? 'active' : ''}}" data-value="female" bindtap="onGenderTap">女</view>
-          </view>
-        </view>
-        <view class="form-group flex-1 ml-16">
-          <text class="form-label">年龄</text>
-          <input class="form-input" type="number" placeholder="年龄" value="{{form.age}}" data-field="age" bindinput="onFieldChange" />
-        </view>
-      </view>
-
-      <view class="form-group">
-        <text class="form-label">微信号</text>
-        <input class="form-input" placeholder="微信号（可选）" value="{{form.wechat}}" data-field="wechat" bindinput="onFieldChange" />
-      </view>
-
-      <view class="form-group">
-        <text class="form-label">上课地点偏好</text>
-        <input class="form-input" placeholder="如：工作室、常用健身房" value="{{form.location_preference}}" data-field="location_preference" bindinput="onFieldChange" />
-      </view>
-
-      <view class="form-group">
-        <text class="form-label">特殊诉求 / 备注</text>
-        <textarea class="form-textarea" placeholder="伤病、训练目标、饮食要求等..." value="{{form.notes}}" data-field="notes" bindinput="onFieldChange" />
-      </view>
+    <view wx:elif="{{tab === 'courses'}}" class="tab-body">
+      <block wx:for="{{lessons}}" wx:key="_id"><view class="line">{{item.date}} {{item.start_time}} {{item.status_text}}</view></block>
     </view>
-
-    <view class="card" wx:if="{{isEdit}}">
-      <view class="card-header">AI 助手</view>
-      <view class="ai-action-grid">
-        <button class="ai-action-btn" bindtap="onAskAiStudent">问问 AI 这个学员</button>
-        <button class="ai-action-btn" bindtap="onAskAiNextPlan">生成下次课建议</button>
-      </view>
+    <view wx:elif="{{tab === 'summaries'}}" class="tab-body">
+      <block wx:for="{{summaries}}" wx:key="_id"><view class="line">{{item.title || item.theme || '课程总结'}}</view></block>
     </view>
-
-    <view class="card" wx:if="{{isEdit}}">
-      <view class="card-header flex-between">
-        <text>近期课程</text>
-        <text wx:if="{{recentLessons.length > 5}}" class="text-sm text-brand" bindtap="onToggleAllLessons">
-          {{showAllLessons ? '收起' : '查看全部'}}
-        </text>
-      </view>
-
-      <view wx:if="{{recentLessons.length > 0}}">
-        <view
-          wx:for="{{displayLessons}}"
-          wx:key="_id"
-          class="mini-lesson-item"
-          data-id="{{item._id}}"
-          data-status="{{item.status}}"
-          bindtap="onLessonTap"
-        >
-          <view class="ml-left">
-            <text class="ml-date">{{item._dateShort}}</text>
-            <text class="ml-time">{{item.start_time}}-{{item.end_time}}</text>
-            <text wx:if="{{item.location}}" class="ml-location">{{item.location}}</text>
-          </view>
-          <view class="ml-right">
-            <t-tag wx:if="{{item.status==='pending'}}" theme="warning" variant="light" size="small">待确认</t-tag>
-            <t-tag wx:elif="{{item.status==='confirmed'}}" theme="primary" variant="light" size="small">已确认</t-tag>
-            <t-tag wx:elif="{{item.status==='completed'}}" theme="success" variant="light" size="small">已完成</t-tag>
-            <t-tag wx:elif="{{item.status==='cancelled'}}" theme="default" variant="light" size="small">已取消</t-tag>
-          </view>
-        </view>
-      </view>
-
-      <view wx:else class="text-muted text-sm text-center py-24">
-        暂无课程记录
-      </view>
+    <view wx:elif="{{tab === 'data'}}" class="tab-body">
+      <view>累计课程数：{{lessons.length}}</view>
+      <view>常练动作会基于标准动作名称统计。</view>
     </view>
+    <view wx:else class="tab-body">{{form.notes || '未填写'}}</view>
+  </view>
 
-    <view class="card" wx:if="{{isEdit}}">
-      <view class="card-header">课时卡</view>
-
-      <view class="lessons-overview">
-        <view class="hero-number">{{student.remaining_lessons || 0}}</view>
-        <view class="hero-label">剩余课时</view>
-      </view>
-
-      <view class="lessons-actions">
-        <t-button theme="primary" size="medium" class="flex-1" bind:tap="onRecharge">充值课时</t-button>
-        <t-button theme="default" variant="outline" size="medium" class="flex-1 ml-16" bind:tap="onDeduct">手动扣减</t-button>
-      </view>
-
-      <view class="schedule-action">
-        <t-button theme="default" variant="outline" size="medium" block bind:tap="onScheduleLesson">给 TA 排课</t-button>
-      </view>
-
-      <view class="text-center mt-16">
-        <text class="text-sm text-brand" bindtap="onShowLessonCardDetail">查看课时记录</text>
-      </view>
+  <view wx:if="{{studentId}}" class="panel section">
+    <view class="title">课时管理</view>
+    <input class="input" type="digit" placeholder="课时数量" value="{{balanceAmount}}" bindinput="inputBalanceAmount" />
+    <input class="input reason" placeholder="原因" value="{{balanceReason}}" bindinput="inputBalanceReason" />
+    <view class="row between">
+      <button class="primary-button half-btn" data-type="recharge" bindtap="adjustBalance">充值</button>
+      <button class="ghost-button half-btn" data-type="manual_deduct" bindtap="adjustBalance">手动扣减</button>
     </view>
-
-    <view class="safe-bottom" style="padding: var(--space-lg) 0 0;">
-      <t-button theme="primary" size="large" block loading="{{saving}}" disabled="{{saving}}" bind:tap="onSave">
-        {{isEdit ? '保存修改' : '添加学员'}}
-      </t-button>
-    </view>
-  </block>
-
-  <t-dialog
-    visible="{{rechargeVisible}}"
-    title="{{rechargeMode === 'deduct' ? '扣减课时' : '充值课时'}}"
-    confirm-btn="确认"
-    cancel-btn="取消"
-    bind:confirm="onConfirmRecharge"
-    bind:cancel="onCloseRecharge"
-    bind:close="onCloseRecharge"
-  >
-    <view class="dialog-body" slot="content">
-      <input class="form-input" type="number" placeholder="请输入课时数量" value="{{rechargeAmount}}" focus="{{rechargeVisible}}" bindinput="onRechargeInput" />
-      <input class="form-input mt-16" placeholder="备注（可选）" value="{{rechargeReason}}" bindinput="onRechargeReasonInput" />
-    </view>
-  </t-dialog>
-
-  <t-dialog
-    visible="{{showLessonCardDetail}}"
-    title="课时详情"
-    confirm-btn="关闭"
-    bind:confirm="onCloseLessonCardDetail"
-    bind:close="onCloseLessonCardDetail"
-  >
-    <view class="dialog-body" slot="content">
-      <view class="lessons-overview-sm">
-        <view class="hero-number">{{student.remaining_lessons || 0}}</view>
-        <view class="hero-label">剩余课时</view>
-      </view>
-
-      <view class="section-title">变动记录</view>
-      <view wx:if="{{lessonLogs.length > 0}}">
-        <view class="log-item" wx:for="{{lessonLogs}}" wx:key="_id">
-          <view class="log-info">
-            <text class="log-reason">{{item.reason || '无备注'}}</text>
-            <text class="log-time">{{item.timeText}}</text>
-          </view>
-          <text class="log-amount {{item.change_amount > 0 ? 'text-success' : 'text-danger'}}">
-            {{item.change_amount > 0 ? '+' : ''}}{{item.change_amount}}
-          </text>
-        </view>
-      </view>
-      <view wx:else class="text-muted text-sm text-center py-24">暂无变动记录</view>
-    </view>
-  </t-dialog>
+    <block wx:for="{{balanceLogs}}" wx:key="_id"><view class="line">{{item.type_text}} {{item.amount}} · {{item.reason}}</view></block>
+  </view>
 </view>

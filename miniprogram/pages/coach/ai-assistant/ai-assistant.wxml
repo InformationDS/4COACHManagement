@@ -1,136 +1,35 @@
 <view class="ai-page">
-  <view class="summary-panel">
-    <view class="summary-head">
-      <view>
-        <text class="summary-title">AI 教练助手</text>
-        <text class="summary-date">{{today}}</text>
-      </view>
-      <view class="status-pill {{aiStatus.aiAvailable ? 'is-on' : 'is-off'}}">
-        {{aiStatus.aiAvailable ? 'AI可用' : 'AI降级'}}
-      </view>
+  <view class="today-panel">
+    <view class="today-title">今日 {{today.todayLessonCount}} 节课</view>
+    <view class="today-meta">
+      <text wx:if="{{today.nextLesson}}">下一节 {{today.nextLesson.time}} {{today.nextLesson.student_name}}</text>
+      <text wx:else>今天还没有后续课程</text>
+      <text>总结未完成 {{today.pendingSummaryCount}} 条</text>
     </view>
-
-    <view class="summary-main">
-      <text class="summary-number">{{summary.remaining}}</text>
-      <text class="summary-label">今日待上课程</text>
-    </view>
-
-    <view class="summary-grid">
-      <view class="summary-item">
-        <text class="summary-item-value">{{summary.total}}</text>
-        <text class="summary-item-label">全部</text>
-      </view>
-      <view class="summary-item">
-        <text class="summary-item-value">{{summary.completed}}</text>
-        <text class="summary-item-label">完成</text>
-      </view>
-      <view class="summary-item warn">
-        <text class="summary-item-value">{{summary.missingRecords}}</text>
-        <text class="summary-item-label">待补记录</text>
-      </view>
-      <view class="summary-item warn">
-        <text class="summary-item-value">{{summary.lowBalance}}</text>
-        <text class="summary-item-label">低课时</text>
-      </view>
-    </view>
-    <text class="next-line">{{summary.nextText}}</text>
   </view>
 
-  <scroll-view class="messages" scroll-y scroll-with-animation>
-    <view
-      wx:for="{{messages}}"
-      wx:key="id"
-      class="message-row {{item.role}}"
-    >
-      <view class="message-bubble {{item.type}}">
-        <text wx:if="{{item.text}}" class="message-text">{{item.text}}</text>
-
-        <view wx:if="{{item.card}}" class="ai-card {{item.card.theme}}">
-          <view class="ai-card-title">{{item.card.title || '任务卡片'}}</view>
-          <text wx:if="{{item.card.summary}}" class="ai-card-summary">{{item.card.summary}}</text>
-
-          <view wx:if="{{item.card.fields.length}}" class="field-list">
-            <view wx:for="{{item.card.fields}}" wx:for-item="field" wx:key="label" class="field-row">
-              <text class="field-label">{{field.label}}</text>
-              <text class="field-value">{{field.value}}</text>
-            </view>
-          </view>
-
-          <view wx:if="{{item.card.evidence && item.card.evidence.length}}" class="evidence-list">
-            <text class="evidence-title">依据</text>
-            <text wx:for="{{item.card.evidence}}" wx:key="id" class="evidence-item">{{item.label}}</text>
-          </view>
-
-          <view wx:if="{{item.type === 'confirm_card' && !item.card.local_cancelled}}" class="card-actions">
-            <button
-              class="card-btn primary"
-              data-id="{{item.card.confirmation_id}}"
-              loading="{{executingId === item.card.confirmation_id}}"
-              bindtap="onConfirmCard"
-            >{{item.card.primaryText}}</button>
-            <button
-              class="card-btn secondary"
-              data-id="{{item.card.confirmation_id}}"
-              bindtap="onCancelCard"
-            >取消</button>
-          </view>
-
-          <view wx:if="{{item.type === 'choice_card' && item.card.options.length && !item.card.local_selected}}" class="card-actions">
-            <button
-              wx:for="{{item.card.options}}"
-              wx:for-item="option"
-              wx:for-index="optionIndex"
-              wx:key="id"
-              class="card-btn {{optionIndex === 0 ? 'secondary' : 'primary'}}"
-              data-message-id="{{item.id}}"
-              data-option-index="{{optionIndex}}"
-              bindtap="onChoiceOption"
-            >{{option.label}}</button>
-          </view>
-
-          <view wx:if="{{item.card.local_cancelled}}" class="card-cancelled">已取消本次确认</view>
-
-          <view wx:if="{{item.card.route && item.type !== 'confirm_card'}}" class="card-actions">
-            <button
-              class="card-btn secondary"
-              data-route="{{item.card.route}}"
-              bindtap="onNavigateFromCard"
-            >查看详情</button>
-          </view>
-        </view>
+  <scroll-view class="message-list" scroll-y scroll-with-animation scroll-into-view="{{scrollIntoView}}">
+    <block wx:for="{{messages}}" wx:key="id">
+      <view id="msg-{{index}}">
+        <ai-card-renderer message="{{item}}" bind:confirm="confirmCard" bind:cancel="cancelCard" />
       </view>
-    </view>
-
-    <view wx:if="{{sending}}" class="message-row assistant">
-      <view class="message-bubble loading">正在整理...</view>
-    </view>
+    </block>
+    <view class="message-bottom-space"></view>
   </scroll-view>
 
-  <view class="quick-strip">
-    <scroll-view scroll-x class="quick-scroll" show-scrollbar="{{false}}">
-      <view class="quick-list">
-        <view
-          wx:for="{{quickActions}}"
-          wx:key="id"
-          class="quick-chip"
-          data-id="{{item.id}}"
-          data-prompt="{{item.prompt}}"
-          bindtap="onQuickAction"
-        >{{item.label}}</view>
-      </view>
+  <view class="composer">
+    <scroll-view class="quick-actions" scroll-x>
+      <block wx:for="{{quickActions}}" wx:key="text">
+        <view class="quick-chip" data-prompt="{{item.prompt}}" bindtap="sendQuick">{{item.text}}</view>
+      </block>
     </scroll-view>
-  </view>
-
-  <view class="input-bar safe-bottom">
-    <textarea
-      class="ai-input"
-      auto-height
-      maxlength="500"
-      placeholder="输入文字，让 AI 帮你查日程、排课或记录训练"
-      value="{{inputText}}"
-      bindinput="onInput"
-    ></textarea>
-    <button class="voice-btn" bindtap="onVoiceTap">语音</button>
-    <button class="send-btn {{inputText ? '' : 'disabled'}}" bindtap="onSend" loading="{{sending}}">发送</button>
+    <view wx:if="{{voiceHint}}" class="voice-hint">{{voiceHint}}</view>
+    <view class="input-panel">
+      <textarea class="chat-input" auto-height maxlength="500" placeholder="和 AI 教练说点什么..." value="{{inputText}}" bindinput="onInput" />
+      <view class="input-actions">
+        <button class="voice-button" bindtouchstart="onTouchStart" bindtouchmove="onTouchMove" bindtouchend="onTouchEnd">语音暂不可用</button>
+        <button class="send-button" loading="{{sending}}" bindtap="sendMessage">发送</button>
+      </view>
+    </view>
   </view>
 </view>

@@ -1,20 +1,26 @@
 {
   "pages": [
-    "pages/index/index",
     "pages/coach/ai-assistant/ai-assistant",
     "pages/coach/lessons/lessons",
     "pages/coach/students/students",
-    "pages/coach/student-detail/student-detail",
     "pages/coach/settings/settings",
-    "pages/coach/training-record/training-record",
-    "pages/common/login-guide/login-guide"
+    "pages/coach/lesson-detail/lesson-detail",
+    "pages/coach/lesson-form/lesson-form",
+    "pages/coach/student-detail/student-detail",
+    "pages/coach/training-summary-detail/training-summary-detail",
+    "pages/coach/action-library/action-library"
   ],
+  "window": {
+    "navigationBarTitleText": "AI教练助手",
+    "navigationBarBackgroundColor": "#1A1A2E",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#F0F2F5"
+  },
   "tabBar": {
     "custom": true,
-    "color": "#9CA3AF",
+    "color": "#6B7280",
     "selectedColor": "#FF6B35",
-    "backgroundColor": "#ffffff",
-    "borderStyle": "white",
+    "backgroundColor": "#FFFFFF",
     "list": [
       {
         "pagePath": "pages/coach/ai-assistant/ai-assistant",
@@ -34,13 +40,11 @@
       }
     ]
   },
-  "window": {
-    "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#FF6B35",
-    "navigationBarTitleText": "私教助手",
-    "navigationBarTextStyle": "white",
-    "backgroundColor": "#F0F2F5"
+  "permission": {
+    "scope.record": {
+      "desc": "用于语音输入记录训练、排课等指令"
+    }
   },
-  "cloud": true,
-  "sitemapLocation": "sitemap.json"
+  "sitemapLocation": "sitemap.json",
+  "style": "v2"
 }

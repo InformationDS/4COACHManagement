@@ -1,41 +1,6 @@
-# === WeChat Mini Program ===
-# 微信开发者工具生成的临时文件
-miniprogram/.tea/
-miniprogram/.eslintrc.js
 node_modules/
-
-# 私有配置（含 appid 等敏感信息）
-project.private.config.json
-
-# === OS Files ===
+miniprogram/miniprogram_npm/
 .DS_Store
-Thumbs.db
-desktop.ini
-
-# === IDE / Editor ===
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# === Logs ===
 *.log
-npm-debug.log*
-
-# === Dependencies ===
-miniprogram_npm/
-
-# === Build Artifacts ===
-dist/
-build/
-
-# === Environment ===
-.env
-.env.local
-.env.*.local
-
-# === Temp Files ===
-*.tmp
-*.temp
-.superpowers/
+*.local
+project.private.config.json

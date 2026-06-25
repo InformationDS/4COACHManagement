@@ -1,0 +1,41 @@
+<view class="page">
+  <view class="panel">
+    <view class="form-field">
+      <text class="form-label">学员</text>
+      <picker range="{{students}}" range-key="name" value="{{studentIndex}}" bindchange="pickStudent">
+        <view class="picker">{{studentIndex >= 0 ? students[studentIndex].name : '请选择学员'}}</view>
+      </picker>
+    </view>
+    <view class="form-field">
+      <text class="form-label">日期</text>
+      <picker mode="date" value="{{form.date}}" bindchange="pickDate"><view class="picker">{{form.date}}</view></picker>
+    </view>
+    <view class="row between">
+      <view class="form-field half">
+        <text class="form-label">开始时间</text>
+        <picker mode="time" value="{{form.start_time}}" bindchange="pickStart"><view class="picker">{{form.start_time}}</view></picker>
+      </view>
+      <view class="form-field half">
+        <text class="form-label">结束时间</text>
+        <picker mode="time" value="{{form.end_time}}" bindchange="pickEnd"><view class="picker">{{form.end_time}}</view></picker>
+      </view>
+    </view>
+    <view class="form-field">
+      <text class="form-label">消耗课时</text>
+      <picker range="{{unitOptions}}" value="{{unitIndex}}" bindchange="pickUnit"><view class="picker">{{form.lesson_units}}</view></picker>
+    </view>
+    <view class="form-field">
+      <text class="form-label">地点</text>
+      <input class="input" value="{{form.location}}" data-key="location" bindinput="inputField" />
+    </view>
+    <view class="form-field">
+      <text class="form-label">训练主题</text>
+      <input class="input" value="{{form.training_theme}}" data-key="training_theme" bindinput="inputField" />
+    </view>
+    <view class="form-field">
+      <text class="form-label">备注</text>
+      <textarea class="textarea" value="{{form.notes}}" data-key="notes" bindinput="inputField" />
+    </view>
+    <button class="primary-button" bindtap="save">保存课程</button>
+  </view>
+</view>

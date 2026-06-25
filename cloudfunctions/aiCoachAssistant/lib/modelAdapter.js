@@ -1,210 +1,132 @@
-const http = require('http');
-const https = require('https');
-const { URL } = require('url');
+const https = require("https");
+const http = require("http");
 
-const CONFIG = {
-  apiKey: process.env.LLM_API_KEY || '',
-  apiUrl: process.env.LLM_API_URL || 'https://api.openai.com/v1/chat/completions',
-  model: process.env.LLM_MODEL || 'gpt-4o-mini',
-  timeout: 15000
-};
-
-function isConfigured() {
-  return !!CONFIG.apiKey;
-}
-
-async function generateJson({ system, user, maxTokens = 800, temperature = 0.1 }) {
-  if (!isConfigured()) {
-    return { ok: false, skipped: true, message: 'LLM_API_KEY is not configured' };
-  }
-
-  const apiUrl = new URL(CONFIG.apiUrl);
-  const httpModule = apiUrl.protocol === 'https:' ? https : http;
-  const requestBody = JSON.stringify({
-    model: CONFIG.model,
-    messages: [
-      { role: 'system', content: system },
-      { role: 'user', content: user }
-    ],
-    max_tokens: maxTokens,
-    temperature,
-    response_format: { type: 'json_object' }
-  });
-
+function requestJson(url, headers, body, timeoutMs) {
   return new Promise((resolve, reject) => {
-    const req = httpModule.request({
-      hostname: apiUrl.hostname,
-      port: apiUrl.port,
-      path: apiUrl.pathname + apiUrl.search,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${CONFIG.apiKey}`,
-        'Content-Length': Buffer.byteLength(requestBody)
-      },
-      timeout: CONFIG.timeout
+    const parsed = new URL(url);
+    const client = parsed.protocol === "http:" ? http : https;
+    const req = client.request({
+      method: "POST",
+      hostname: parsed.hostname,
+      port: parsed.port || (parsed.protocol === "http:" ? 80 : 443),
+      path: `${parsed.pathname}${parsed.search}`,
+      headers,
+      timeout: timeoutMs
     }, (res) => {
-      let raw = '';
-      res.on('data', chunk => { raw += chunk; });
-      res.on('end', () => {
+      let raw = "";
+      res.on("data", (chunk) => { raw += chunk; });
+      res.on("end", () => {
+        if (res.statusCode < 200 || res.statusCode >= 300) {
+          reject(new Error(`LLM request failed: ${res.statusCode} ${raw.slice(0, 200)}`));
+          return;
+        }
         try {
-          const data = JSON.parse(raw);
-          if (data.error) {
-            resolve({ ok: false, message: data.error.message || 'model error', raw: data });
-            return;
-          }
-          const content = data.choices && data.choices[0] && data.choices[0].message
-            ? data.choices[0].message.content
-            : '';
-          resolve({
-            ok: true,
-            data: parseJsonContent(content),
-            usage: data.usage || {},
-            model: data.model || CONFIG.model
-          });
-        } catch (err) {
-          resolve({ ok: false, message: err.message || 'invalid model response' });
+          resolve(JSON.parse(raw));
+        } catch (error) {
+          reject(error);
         }
       });
     });
-
-    req.on('error', reject);
-    req.on('timeout', () => {
-      req.destroy();
-      reject(new Error('model request timeout'));
+    req.on("error", reject);
+    req.on("timeout", () => {
+      req.destroy(new Error("LLM request timeout"));
     });
-    req.write(requestBody);
+    req.write(JSON.stringify(body));
     req.end();
   });
 }
 
-async function parseTrainingRecord(text) {
-  const system = [
-    '你是私教训练记录结构化助手。',
-    '只返回 JSON，不要解释。',
-    'JSON 字段：body_parts:string[], exercises:{name:string,sets:number,reps:number,weight:string}[], notes:string。',
-    '无法确定的字段使用空数组、0 或空字符串，不要编造。'
-  ].join('\n');
-  const res = await generateJson({
-    system,
-    user: `教练口述：${text}`,
-    maxTokens: 700,
-    temperature: 0.1
-  });
-  if (!res.ok || !res.data) return res;
-  return {
-    ok: true,
-    data: {
-      body_parts: Array.isArray(res.data.body_parts) ? res.data.body_parts : [],
-      exercises: Array.isArray(res.data.exercises) ? res.data.exercises.map(item => ({
-        name: String(item.name || '').trim(),
-        sets: Number(item.sets || 0),
-        reps: Number(item.reps || 0),
-        weight: String(item.weight || '').trim()
-      })).filter(item => item.name) : [],
-      notes: String(res.data.notes || '').trim()
-    },
-    usage: res.usage || {},
-    model: res.model || CONFIG.model
-  };
-}
+async function generateJson({ system, messages, schema }) {
+  const apiKey = process.env.LLM_API_KEY;
+  const baseUrl = process.env.LLM_BASE_URL || process.env.LLM_API_URL;
+  const model = process.env.LLM_MODEL || "gpt-4o-mini";
+  const timeoutMs = Number(process.env.LLM_TIMEOUT_MS || 20000);
+  const temperature = Number(process.env.LLM_TEMPERATURE || 0.2);
 
-async function classifyCoachIntent({ text, sourceContext = {}, clientDate = '' }) {
-  const system = [
-    '你是私教小程序 AI 助手的意图路由器。',
-    '只返回 JSON，不要解释。',
-    '必须从 allowed_intents 里选择一个 intent。',
-    'allowed_intents: query_today_lessons, query_student, analyze_student, create_lesson, update_lesson, cancel_lesson, create_training_record, missing_training_records, low_balance_students, operation_review, update_student_note, unknown。',
-    '不要执行任何动作，只识别用户想做什么，并抽取槽位。',
-    '槽位字段：student_name, lesson_id, student_id, date_text, start_time_text, location, body_parts, exercises_text, note_text。',
-    '如果用户说“最近练得怎么样/训练情况/分析”，intent 应为 analyze_student。',
-    '如果用户说“记录训练/补训练记录/练胸/卧推/高位下拉”等，intent 应为 create_training_record。',
-    '如果用户只补充一个姓名或数字，并且上下文有 previous_intent，则延续 previous_intent。',
-    'confidence 取 0 到 1；缺少关键槽位时写 missing_slots。'
-  ].join('\n');
-  const user = JSON.stringify({
-    text,
-    client_date: clientDate,
-    previous_intent: sourceContext.intent || '',
-    previous_input: sourceContext.previous_input || '',
-    source: sourceContext.source || '',
-    lesson_id: sourceContext.lesson_id || '',
-    student_id: sourceContext.student_id || ''
-  });
-  const res = await generateJson({
-    system,
-    user,
-    maxTokens: 700,
-    temperature: 0
-  });
-  if (!res.ok || !res.data) return res;
-  const data = res.data || {};
-  return {
-    ok: true,
-    data: {
-      intent: normalizeIntent(data.intent),
-      confidence: clampConfidence(data.confidence),
-      slots: normalizeSlots(data.slots || data),
-      missing_slots: Array.isArray(data.missing_slots) ? data.missing_slots.map(String) : [],
-      reason: String(data.reason || '').slice(0, 120)
-    },
-    usage: res.usage || {},
-    model: res.model || CONFIG.model
-  };
-}
-
-function normalizeIntent(intent) {
-  const allowed = new Set([
-    'query_today_lessons',
-    'query_student',
-    'analyze_student',
-    'create_lesson',
-    'update_lesson',
-    'cancel_lesson',
-    'create_training_record',
-    'missing_training_records',
-    'low_balance_students',
-    'operation_review',
-    'update_student_note',
-    'unknown'
-  ]);
-  return allowed.has(intent) ? intent : 'unknown';
-}
-
-function normalizeSlots(slots) {
-  return {
-    student_name: String(slots.student_name || '').trim(),
-    lesson_id: String(slots.lesson_id || '').trim(),
-    student_id: String(slots.student_id || '').trim(),
-    date_text: String(slots.date_text || '').trim(),
-    start_time_text: String(slots.start_time_text || '').trim(),
-    location: String(slots.location || '').trim(),
-    body_parts: Array.isArray(slots.body_parts) ? slots.body_parts.map(String).filter(Boolean) : [],
-    exercises_text: String(slots.exercises_text || '').trim(),
-    note_text: String(slots.note_text || '').trim()
-  };
-}
-
-function clampConfidence(value) {
-  const num = Number(value);
-  if (!Number.isFinite(num)) return 0;
-  return Math.max(0, Math.min(1, num));
-}
-
-function parseJsonContent(content) {
-  if (!content) return null;
-  try {
-    return JSON.parse(content);
-  } catch (err) {
-    const match = content.match(/\{[\s\S]*\}/);
-    if (!match) throw err;
-    return JSON.parse(match[0]);
+  if (!apiKey || !baseUrl) {
+    return {
+      usedModel: false,
+      provider: "local_fallback",
+      model: "rules",
+      data: null,
+      usage: null
+    };
   }
+
+  const response = await requestJson(baseUrl, {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${apiKey}`
+  }, {
+    model,
+    temperature,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: `${system}\nReturn strict JSON only. Schema hint: ${JSON.stringify(schema)}` },
+      ...messages
+    ]
+  }, timeoutMs);
+
+  const content = response.choices && response.choices[0] && response.choices[0].message ? response.choices[0].message.content : "{}";
+  return {
+    usedModel: true,
+    provider: "openai_compatible",
+    model,
+    data: JSON.parse(content),
+    usage: response.usage || null
+  };
+}
+
+async function generateIntentExtraction({ text, previousTaskState, sourceContext, clientTime }) {
+  const schema = {
+    intent: "query_today_lessons | query_student | create_lesson | generate_training_plan | save_lesson_summary | other",
+    confidence: "number between 0 and 1",
+    entities: {
+      student_name: "student name mentioned by the user, no database ids",
+      date_text: "relative or absolute date text",
+      start_time_text: "start time text",
+      end_time_text: "end time text",
+      duration_minutes: "number or null",
+      location: "lesson location",
+      lesson_ref_text: "text that identifies a lesson, no database ids",
+      training_theme: "training plan theme",
+      summary_text: "lesson summary text",
+      raw_actions: "array of raw exercise/action names"
+    },
+    task_control: "none | cancel_current | switch_task",
+    missing_slots: "array of allowed slot names only",
+    normalized_text: "concise Chinese rewrite preserving concrete entities",
+    clarification_question: "short Chinese follow-up question when useful"
+  };
+  const system = [
+    "You extract intent and slots for a Chinese private fitness coach mini program.",
+    "Return only the schema fields. Do not include coach_openid, _openid, database IDs, or action_type.",
+    "Intent means the user's goal, not the backend write action.",
+    "Use generate_training_plan when the user asks for a pre-class training plan.",
+    "Use save_lesson_summary when the user asks to record or summarize actual training after a class.",
+    "Use create_lesson when the user wants to arrange, book, add, or schedule a lesson.",
+    "If previousTaskState exists, extract only new slot information unless the user clearly cancels or switches task.",
+    "For cancellation phrases such as 算了, 取消, 不用了, return task_control cancel_current.",
+    "For a high-confidence read query such as 今天有哪些课, return that read intent even if previousTaskState exists."
+  ].join("\n");
+  const messages = [
+    {
+      role: "user",
+      content: JSON.stringify({
+        text,
+        previousTaskState: previousTaskState ? {
+          intent: previousTaskState.intent,
+          slots: previousTaskState.slots || {},
+          missing_slots: previousTaskState.missing_slots || []
+        } : null,
+        sourceContext: sourceContext || {},
+        clientTime: clientTime || ""
+      })
+    }
+  ];
+  return generateJson({ system, messages, schema });
 }
 
 module.exports = {
-  isConfigured,
   generateJson,
-  parseTrainingRecord,
-  classifyCoachIntent
+  generateIntentExtraction
 };
